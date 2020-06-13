@@ -77,7 +77,14 @@ typedef struct network network;
 //methods -----------------------------------------------------------
 
 void identityInputLayer(network *net){
-
+  for(int i = 0; i <= INPUTWIDTH - 1; i ++){
+    //set input node weights to 1
+    net->inputLayer->nodes[i]->weight = 1;
+    for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
+      //set input node edge weights to 1
+      net->inputLayer->nodes[i]->outputs[j].weight = 1;
+    }
+  }
 }
 
 void identityHiddenLayers(network *net){
@@ -154,8 +161,10 @@ network *allocateNetwork(){
 }
 
 network *generateNetwork(){
-  network *net = allocateNetwork(INPUTWIDTH, HIDDENWIDTH, HIDDENDEPTH, OUTPUTWIDTH);
+  network *net = allocateNetwork();
   identityNetwork(net);
+
+  return net;
 }
 
 int main(int n, char *args[n]){
