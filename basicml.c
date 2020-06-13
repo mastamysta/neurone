@@ -88,7 +88,22 @@ void identityInputLayer(network *net){
 }
 
 void identityHiddenLayers(network *net){
-
+  //set last hidden layer weights to 1 first
+  for(int i = 0; i <= HIDDENWIDTH - 1; i ++){
+    net->hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]->nodes[i]->weight = 0;
+    for(int j = 0; j <= OUTPUTWIDTH - 1; j ++){
+      net->hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]->nodes[i]->outputs[j].weight = 0 ;
+    }
+  }
+  //set all other hidden layer weights to 1 in reverse order
+  for(int i = HIDDENDEPTH - 2; i >= 0; i --){
+    for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
+      net->hiddenLayers->hiddenLayers[i]->nodes[j]->weight = 0;
+      for(int k = 0; k <= HIDDENWIDTH - 1; k ++){
+        net->hiddenLayers->hiddenLayers[i]->nodes[j]->outputs[k].weight = 0;
+      }
+    }
+  }
 }
 
 void identityOutputLayer(network *net){
