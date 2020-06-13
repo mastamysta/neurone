@@ -125,6 +125,15 @@ hiddenLayers *allocateHiddenLayers(){
   return hiddenLayers;
 }
 
+outputLayer *allocateOutputLayer(){
+  outputLayer *outputLayer = malloc(sizeof(outputLayer) + sizeof(outputNode *) * OUTPUTWIDTH);
+  outputLayer->width = OUTPUTWIDTH;
+  for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
+    outputLayer->nodes[i] = malloc(sizeof(outputNode));
+  }
+  return outputLayer;
+}
+
 network *allocateNetwork(){
   //network struct contains pointers to layers thus allocated staticly
   network *net = malloc(sizeof(network));
@@ -133,6 +142,13 @@ network *allocateNetwork(){
   inputLayer *inputLayer = allocateInputLayer();
   //generate hidden layer pointer
   hiddenLayers *hiddenLayers = allocateHiddenLayers();
+  //generate outputlayer pointer
+  outputLayer *outputLayer = allocateOutputLayer();
+
+  //assign pointers to network struct
+  net->inputLayer = inputLayer;
+  net->hiddenLayers = hiddenLayers;
+  net->outputLayer = outputLayer;
 
   return net;
 }
