@@ -98,7 +98,7 @@ inputLayer *allocateInputLayer(){
   //input layer pointer generated with correct size allocation
   inputLayer *inputLayer = malloc(sizeof(inputLayer) + sizeof(inputNode *) * INPUTWIDTH);
   inputLayer->width = INPUTWIDTH;
-  for(int i = 0; i > INPUTWIDTH; i++){
+  for(int i = 0; i <= INPUTWIDTH - 1; i++){
     inputLayer->nodes[i] = malloc(sizeof(inputNode) + sizeof(edge) * HIDDENWIDTH);
   }
   return inputLayer;
@@ -107,6 +107,22 @@ inputLayer *allocateInputLayer(){
 hiddenLayers *allocateHiddenLayers(){
   hiddenLayers *hiddenLayers = malloc(sizeof(hiddenLayers) + sizeof(hiddenLayer *) * HIDDENDEPTH);
   hiddenLayers->depth = HIDDENDEPTH;
+  //Allocate final layer of hidden layers first with |E| from each node equal to OUTPUTWIDTH
+  hiddenLayers->hiddenLayers[HIDDENDEPTH - 1] = malloc(sizeof(hiddenLayer) + sizeof(hiddenNode) * HIDDENWIDTH);
+  hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]->width = HIDDENWIDTH;
+  for(int i = 0; i <= HIDDENWIDTH - 1; i ++){
+    hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]->nodes[i] = malloc(sizeof(hiddenNode) + sizeof(edge) * OUTPUTWIDTH);
+
+  }
+  //Allocate all other layers in reverse with |E| from each node equal to HIDDENWIDTH
+    for(int i = HIDDENDEPTH - 2; i >= 0; i --){
+    hiddenLayers->hiddenLayers[i] = malloc(sizeof(hiddenLayer) + sizeof(hiddenNode *) * HIDDENWIDTH);
+    hiddenLayers->hiddenLayers[i]->width = HIDDENWIDTH;
+    for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
+      hiddenLayers->hiddenLayers[i]->nodes[j] = malloc(sizeof(hiddenNode) + sizeof(edge) * HIDDENWIDTH);
+    }
+  }
+  return hiddenLayers;
 }
 
 network *allocateNetwork(){
@@ -115,6 +131,8 @@ network *allocateNetwork(){
 
   //generate input layer pointer
   inputLayer *inputLayer = allocateInputLayer();
+  //generate hidden layer pointer
+  hiddenLayers *hiddenLayers = allocateHiddenLayers();
 
   return net;
 }
