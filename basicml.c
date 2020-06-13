@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 const int INPUTWIDTH = 3;
 const int HIDDENDEPTH = 3;
@@ -107,7 +108,10 @@ void identityHiddenLayers(network *net){
 }
 
 void identityOutputLayer(network *net){
-
+  for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
+    //set output node weights to 1
+    net->outputLayer->nodes[i]->weight = 1;
+  }
 }
 
 void identityNetwork(network *net){
@@ -183,5 +187,5 @@ network *generateNetwork(){
 }
 
 int main(int n, char *args[n]){
-
+  network *net = generateNetwork();
 }
