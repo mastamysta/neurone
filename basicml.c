@@ -160,6 +160,7 @@ outputLayer *allocateOutputLayer(){
   return outputLayer;
 }
 
+//allocates memory in heap for network
 network *allocateNetwork(){
   //network struct contains pointers to layers thus allocated staticly
   network *net = malloc(sizeof(network));
@@ -179,11 +180,35 @@ network *allocateNetwork(){
   return net;
 }
 
+//allocate memory and identity parameters for all nodes and edges
 network *generateNetwork(){
   network *net = allocateNetwork();
   identityNetwork(net);
 
   return net;
+}
+
+void freeInputLayer(inputLayer *inputLayer){
+
+}
+
+void freeHiddenLayers(hiddenLayers *hiddenLayers){
+
+}
+
+void freeOutputLayer(outputLayer *outputLayer){
+  
+}
+
+void freeNetwork(network *net){
+  freeInputLayer(net->inputLayer);
+  freeHiddenLayers(net->hiddenLayers);
+  freeOutputLayer(net->outputLayer);
+}
+
+//testing --------------------------------------------------------------
+void testNetwork(){
+
 }
 
 int main(int n, char *args[n]){
