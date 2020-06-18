@@ -122,19 +122,22 @@ void predictHiddenLayers(hiddenLayers *hiddenLayers, inputLayer *inputLayer){
       inputs[i * j] = inputLayer->nodes[i]->outputs[j].weight * inputLayer->nodes[i]->value; 
     }
   }
+  free(inputs);
+  inputs = malloc(sizeof(float) * HIDDENWIDTH * HIDDENWIDTH);
   predictHiddenLayer(hiddenLayers->hiddenLayers[0], &inputs);
   //predict values of all other layers based on inputs from previous layer
   //for each hidden layer
-  for(int i = 1; i <= HIDDENDEPTH; i ++){
+  for(int i = 1; i <= HIDDENDEPTH - 1; i ++){
     //for each node in the previous layer
-    for(int j = 0; j <= HIDDENWIDTH; j ++){
+    for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
       //for each node in this layer
-      for(int k = 0; k <= HIDDENWIDTH; k ++){
+      for(int k = 0; k <= HIDDENWIDTH - 1; k ++){
         inputs[j * k] = hiddenLayers->hiddenLayers[i - 1]->nodes[j]->outputs[k].weight * hiddenLayers->hiddenLayers[i - 1]->nodes[j]->value;
       }
     }
     predictHiddenLayer(hiddenLayers->hiddenLayers[i], &inputs);
   }
+  free(inputs);
 }
 
 //predict values in output layer
