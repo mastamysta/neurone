@@ -76,7 +76,17 @@ struct network{
 };
 typedef struct network network;
 
-//methods -----------------------------------------------------------
+//training methods -----------------------------------------------------
+
+//a random float value from 0-1 TODO:ADD DISTRIBUTION TYPES AND MONITOR EFFECTS
+float generateNoise(){
+  const float MAX = 1;
+  //generates a float value from 0 to 1 randomly
+  float x = (float)rand()/(float)(RAND_MAX/MAX);
+  return x;
+}
+
+//initialization functions --------------------------------------------------
 
 //set parameters in input layer to be identity
 void identityInputLayer(network *net){
@@ -199,6 +209,8 @@ network *generateNetwork(){
   return net;
 }
 
+//cleanup functions --------------------------------------
+
 //free space on heap for input layer
 void freeInputLayer(inputLayer *inputLayer){
   for(int i = 0; i <= INPUTWIDTH - 1; i ++){
@@ -237,11 +249,28 @@ void freeNetwork(network *net){
 }
 
 //testing --------------------------------------------------------------
+
 void testNetwork(){
 
 }
 
-int main(int n, char *args[n]){
+testGenerateNoise(){
+  float randomValue;
+  for(int i = 0; i <= 99; i ++){
+    randomValue = generateNoise();
+    assert(randomValue <= 1 && randomValue >= 0);
+  }
+  printf("Noise generattion passed 100 test iterations within bounds\n");
+}
+
+void test(){
   network *net = generateNetwork();
   freeNetwork(net);
+  testGenerateNoise();
+
+  printf("All tests passed\nExiting...\n");
+}
+
+int main(int n, char *args[n]){
+  test();
 }
