@@ -119,7 +119,7 @@ void predictHiddenLayers(hiddenLayers *hiddenLayers, inputLayer *inputLayer){
   for(int i = 0; i <= INPUTWIDTH - 1; i ++){
     //for each node in the first hidden layer
     for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
-      inputs[i * j] = inputLayer->nodes[i]->outputs[j].weight * inputLayer->nodes[i]->value; 
+      inputs[i * j] = inputLayer->nodes[i]->outputs[j].weight * inputLayer->nodes[i]->value;
     }
   }
   free(inputs);
@@ -170,17 +170,17 @@ void identityInputLayer(network *net){
 void identityHiddenLayers(network *net){
   //set last hidden layer weights to 1 first
   for(int i = 0; i <= HIDDENWIDTH - 1; i ++){
-    net->hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]->nodes[i]->weight = 0;
+    net->hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]->nodes[i]->weight = 1;
     for(int j = 0; j <= OUTPUTWIDTH - 1; j ++){
-      net->hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]->nodes[i]->outputs[j].weight = 0 ;
+      net->hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]->nodes[i]->outputs[j].weight = 1;
     }
   }
   //set all other hidden layer weights to 1 in reverse order
   for(int i = HIDDENDEPTH - 2; i >= 0; i --){
     for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
-      net->hiddenLayers->hiddenLayers[i]->nodes[j]->weight = 0;
+      net->hiddenLayers->hiddenLayers[i]->nodes[j]->weight = 1;
       for(int k = 0; k <= HIDDENWIDTH - 1; k ++){
-        net->hiddenLayers->hiddenLayers[i]->nodes[j]->outputs[k].weight = 0;
+        net->hiddenLayers->hiddenLayers[i]->nodes[j]->outputs[k].weight = 1;
       }
     }
   }
@@ -357,6 +357,7 @@ void testPredictHiddenLayers(){
   }
   predictInputLayer(net->inputLayer, &inputs);
   predictHiddenLayers(net->hiddenLayers, net->inputLayer);
+  //assert(net->hiddenLayers->hiddenLayers[2]->nodes[2]->value == (float)1);
 
   free(inputs);
   freeNetwork(net);
