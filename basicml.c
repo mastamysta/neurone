@@ -333,6 +333,26 @@ void freeNetwork(network *net){
 
 //testing --------------------------------------------------------------
 
+//print out the values at each node of the network
+void printNodeValues(network *net){
+  printf("Input Layer\n");
+  for(int i = 0; i <= INPUTWIDTH - 1; i ++){
+    printf("%f  ", net->inputLayer->nodes[i]->value);
+  }
+  printf("\nHidden Layers\n");
+  for(int i = 0; i <= HIDDENDEPTH - 1; i ++){
+    for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
+      printf("%f  ", net->hiddenLayers->hiddenLayers[i]->nodes[j]->value);
+    }
+    printf("\n");
+  }
+  printf("\nOutput Layer\n");
+  for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
+    printf("%f  ", net->outputLayer->nodes[i]->value);
+  }
+  printf("\n\n");
+}
+
 //test network generation and deletion functions
 void testGenerateNetwork(){
   network *net = generateNetwork();
@@ -380,6 +400,7 @@ void testPredictHiddenLayers(){
   predictHiddenLayers(net->hiddenLayers, net->inputLayer);
 
   //assertions
+  printNodeValues(net);
   assert(net->hiddenLayers->hiddenLayers[0]->nodes[0]->value == (float)3);
   assert(net->hiddenLayers->hiddenLayers[1]->nodes[1]->value == (float)12);
   assert(net->hiddenLayers->hiddenLayers[2]->nodes[2]->value == (float)48);
@@ -401,9 +422,7 @@ void testPredictOutputLayer(){
   predictOutputLayer(net->outputLayer, net->hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]);
   printf("%f\n", net->hiddenLayers->hiddenLayers[2]->nodes[2]->value);
   //assertions
-  for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
-    printf("%f\n", net->outputLayer->nodes[i]->value);
-  }
+  printNodeValues(net);
   assert(net->outputLayer->nodes[2]->value == (float)1);
 
   free(inputs);
