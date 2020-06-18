@@ -347,7 +347,17 @@ void testPredictInputLayer(){
 }
 
 void testPredictHiddenLayers(){
+  network *net = generateNetwork();
+  float *inputs = malloc(sizeof(float) * 3);
+  for(int i = 0; i <= 2; i ++){
+    inputs[i] = 1;
+  }
+  predictInputLayer(net->inputLayer, &inputs);
+  predictHiddenLayers(net->hiddenLayers, net->inputLayer);
 
+  free(inputs);
+  freeNetwork(net);
+  printf("Hidden layer predictions passed tests\n\n");
 }
 
 void testPredictOutputLayer(){
@@ -358,6 +368,7 @@ void test(){
   testGenerateNetwork();
   testGenerateNoise(100);
   testPredictInputLayer();
+  testPredictHiddenLayers();
 
   printf("All tests passed\nExiting...\n");
 }
