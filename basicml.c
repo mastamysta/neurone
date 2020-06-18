@@ -23,12 +23,14 @@ typedef struct edge edge;
 //node structures
 struct hiddenNode{
   float weight;
+  float value;
   edge outputs[];
 };
 typedef struct hiddenNode hiddenNode;
 
 
 struct outputNode{
+  float value;
   float weight;
 };
 typedef struct outputNode outputNode;
@@ -36,6 +38,7 @@ typedef struct outputNode outputNode;
 
 struct inputNode{
   float weight;
+  float value;
   edge outputs[];
 };
 typedef struct inputNode inputNode;
@@ -76,7 +79,7 @@ struct network{
 };
 typedef struct network network;
 
-//training methods -----------------------------------------------------
+//training functions -----------------------------------------------------
 
 //a random float value from 0-1 TODO:ADD DISTRIBUTION TYPES AND MONITOR EFFECTS
 float generateNoise(){
@@ -84,6 +87,46 @@ float generateNoise(){
   //generates a float value from 0 to 1 randomly
   float x = (float)rand()/(float)(RAND_MAX/MAX);
   return x;
+}
+
+//evaluation functions ------------------------------------------------
+
+//predict values at input layer
+void predictInputLayer(inputLayer *inputLayer, float *inputs[]){
+  int layerWidth = inputLayer->width;
+  for(int i = 0; i <= layerWidth - 1; i ++){
+    float weight = inputLayer->nodes[i]->weight;
+    inputLayer->nodes[i]->value = (*inputs)[i] * weight;
+  }
+}
+
+//predict values in one hidden layer
+void predictHiddenLayer(hiddenLayer *hiddenLayer, float *inputs[], int inputWidth){
+  int layerWidth = hiddenLayer->width;
+  for(int i = 0; i <= layerWidth - 1; i ++){
+    for(int j = 0; j <= inputWidth - 1; j ++){
+      float weight = hiddenLayer->nodes[i]->weight;
+      hiddenLayer->nodes[i]->value += (*inputs)[i + (j * inputWidth)] * weight;
+    }
+  }
+}
+
+//predict values in all hidden layers
+void predictHiddenLayers(hiddenLayers *hiddenLayers, inputLayer *inputLayer){
+  float *inputs[] = malloc(sizeof(float) * INPUTWIDTH * HIDDENWIDTH);
+  
+}
+
+//predict values in output layer
+void predictOutputLayer(outputLayer *outputLayer, hiddenLayer *hiddenLayer){
+
+}
+
+//predict values at all nodes in the network
+void predict(network *net, float* inputs[INPUTWIDTH - 1]){
+  predictInputLayer(net->inputLayer, inputs);
+  predictHiddenLayers(net->hiddenLayers, net->inputLayer);
+  predictOutputLayer(net->outputLayer, net->hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]);
 }
 
 //initialization functions --------------------------------------------------
@@ -250,27 +293,57 @@ void freeNetwork(network *net){
 
 //testing --------------------------------------------------------------
 
-void testNetwork(){
+void testGenerateNetwork(){
+  network *net = generateNetwork();
+  printf("Network generation passed test\n\n");
+  freeNetwork(net);
+  printf("Network deletion passed test\n\n");
+}
+
+void testGenerateNoise(int iterations){
+  float randomValue;
+  for(int i = 0; i <= iterations; i ++){
+    randomValue = generateNoise();
+    assert(randomValue <= 1);
+    assert(randomValue >= 0);
+  }
+  printf("Noise generattion passed %i test iterations within bounds\n\n", iterations);
+}
+
+void testPredictInputLayer(){
+  network *net = generateNetwork();
+  float *inputs = malloc(sizeof(float) * 3);
+  for(int i = 0; i <= 2; i ++){
+    inputs[i] = i;
+  }
+  predictInputLayer(net->inputLayer, &inputs);
+  
+  assert(net->inputLayer->nodes[0]->value == 0);
+  assert(net->inputLayer->nodes[1]->value == 1);
+  assert(net->inputLayer->nodes[2]->value == 2);
+  free(inputs);
+  freeNetwork(net);
+  printf("Input layer predictions passed tests\n\n");
+}
+
+void testPredictHiddenLayers(){
 
 }
 
-testGenerateNoise(){
-  float randomValue;
-  for(int i = 0; i <= 99; i ++){
-    randomValue = generateNoise();
-    assert(randomValue <= 1 && randomValue >= 0);
-  }
-  printf("Noise generattion passed 100 test iterations within bounds\n");
+void testPredictOutputLayer(){
+
 }
 
 void test(){
-  network *net = generateNetwork();
-  freeNetwork(net);
-  testGenerateNoise();
+  testGenerateNetwork();
+  testGenerateNoise(100);
+  testPredictInputLayer();
 
   printf("All tests passed\nExiting...\n");
 }
 
-int main(int n, char *args[n]){
+//main runner ----------------------------------------------------
+
+int main(){
   test();
 }
