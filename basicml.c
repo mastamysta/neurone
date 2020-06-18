@@ -213,4 +213,5 @@ void testNetwork(){
 
 int main(int n, char *args[n]){
   network *net = generateNetwork();
+  printf("yeeet\n");
 }
