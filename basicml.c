@@ -101,20 +101,40 @@ void predictInputLayer(inputLayer *inputLayer, float *inputs[]){
 }
 
 //predict values in one hidden layer
-void predictHiddenLayer(hiddenLayer *hiddenLayer, float *inputs[], int inputWidth){
+void predictHiddenLayer(hiddenLayer *hiddenLayer, float *inputs[]){
   int layerWidth = hiddenLayer->width;
   for(int i = 0; i <= layerWidth - 1; i ++){
-    for(int j = 0; j <= inputWidth - 1; j ++){
+    for(int j = 0; j <= INPUTWIDTH - 1; j ++){
       float weight = hiddenLayer->nodes[i]->weight;
-      hiddenLayer->nodes[i]->value += (*inputs)[i + (j * inputWidth)] * weight;
+      hiddenLayer->nodes[i]->value += (*inputs)[(j * INPUTWIDTH) + i] * weight;
     }
   }
 }
 
 //predict values in all hidden layers
 void predictHiddenLayers(hiddenLayers *hiddenLayers, inputLayer *inputLayer){
-  float *inputs[] = malloc(sizeof(float) * INPUTWIDTH * HIDDENWIDTH);
-  
+  //predict value of first hidden layer based on inputs from input layer
+  float *inputs = malloc(sizeof(float) * INPUTWIDTH * HIDDENWIDTH);
+  //for each node in the input layer
+  for(int i = 0; i <= INPUTWIDTH - 1; i ++){
+    //for each node in the first hidden layer
+    for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
+      inputs[i * j] = inputLayer->nodes[i]->outputs[j].weight * inputLayer->nodes[i]->value; 
+    }
+  }
+  predictHiddenLayer(hiddenLayers->hiddenLayers[0], &inputs);
+  //predict values of all other layers based on inputs from previous layer
+  //for each hidden layer
+  for(int i = 1; i <= HIDDENDEPTH; i ++){
+    //for each node in the previous layer
+    for(int j = 0; j <= HIDDENWIDTH; j ++){
+      //for each node in this layer
+      for(int k = 0; k <= HIDDENWIDTH; k ++){
+        inputs[j * k] = hiddenLayers->hiddenLayers[i - 1]->nodes[j]->outputs[k].weight * hiddenLayers->hiddenLayers[i - 1]->nodes[j]->value;
+      }
+    }
+    predictHiddenLayer(hiddenLayers->hiddenLayers[i], &inputs);
+  }
 }
 
 //predict values in output layer
