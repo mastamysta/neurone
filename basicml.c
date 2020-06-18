@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+//HYPERPARAMETERS
 const int INPUTWIDTH = 3;
 const int HIDDENDEPTH = 3;
 const int HIDDENWIDTH = 3;
@@ -77,6 +78,7 @@ typedef struct network network;
 
 //methods -----------------------------------------------------------
 
+//set parameters in input layer to be identity
 void identityInputLayer(network *net){
   for(int i = 0; i <= INPUTWIDTH - 1; i ++){
     //set input node weights to 1
@@ -88,6 +90,7 @@ void identityInputLayer(network *net){
   }
 }
 
+//set parameters in hidden layers to be identity
 void identityHiddenLayers(network *net){
   //set last hidden layer weights to 1 first
   for(int i = 0; i <= HIDDENWIDTH - 1; i ++){
@@ -107,6 +110,7 @@ void identityHiddenLayers(network *net){
   }
 }
 
+//set parameters in output layer to be identity
 void identityOutputLayer(network *net){
   for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
     //set output node weights to 1
@@ -114,6 +118,7 @@ void identityOutputLayer(network *net){
   }
 }
 
+//set all parameters in network to be identity
 void identityNetwork(network *net){
   identityInputLayer(net);
   identityHiddenLayers(net);
@@ -121,6 +126,7 @@ void identityNetwork(network *net){
   printf("Network initialised as identity network\n");
 }
 
+//allocate heap space for input layer
 inputLayer *allocateInputLayer(){
   //input layer pointer generated with correct size allocation
   inputLayer *inputLayer = malloc(sizeof(inputLayer) + sizeof(inputNode *) * INPUTWIDTH);
@@ -131,6 +137,7 @@ inputLayer *allocateInputLayer(){
   return inputLayer;
 }
 
+//allocate heap space for each hidden layer
 hiddenLayers *allocateHiddenLayers(){
   hiddenLayers *hiddenLayers = malloc(sizeof(hiddenLayers) + sizeof(hiddenLayer *) * HIDDENDEPTH);
   hiddenLayers->depth = HIDDENDEPTH;
@@ -152,6 +159,7 @@ hiddenLayers *allocateHiddenLayers(){
   return hiddenLayers;
 }
 
+//allocate heap space for output layer
 outputLayer *allocateOutputLayer(){
   outputLayer *outputLayer = malloc(sizeof(outputLayer) + sizeof(outputNode *) * OUTPUTWIDTH);
   outputLayer->width = OUTPUTWIDTH;
