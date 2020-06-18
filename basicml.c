@@ -118,6 +118,7 @@ void identityNetwork(network *net){
   identityInputLayer(net);
   identityHiddenLayers(net);
   identityOutputLayer(net);
+  printf("Network initialised as identity network\n");
 }
 
 inputLayer *allocateInputLayer(){
@@ -177,6 +178,7 @@ network *allocateNetwork(){
   net->hiddenLayers = hiddenLayers;
   net->outputLayer = outputLayer;
 
+  printf("Network heap space allocated\n");
   return net;
 }
 
@@ -185,25 +187,45 @@ network *generateNetwork(){
   network *net = allocateNetwork();
   identityNetwork(net);
 
+  printf("Network initialisation finished\n");
   return net;
 }
 
+//free space on heap for input layer
 void freeInputLayer(inputLayer *inputLayer){
-
+  for(int i = 0; i <= INPUTWIDTH - 1; i ++){
+    free(inputLayer->nodes[i]);
+  }
+  free(inputLayer);
 }
 
+//free space on heap for hidden layers
 void freeHiddenLayers(hiddenLayers *hiddenLayers){
-
+  //free all other layers of hidden layers in reverse order
+  for(int i = 0; i <= HIDDENDEPTH - 1; i ++){
+    for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
+      free(hiddenLayers->hiddenLayers[i]->nodes[j]);
+    }
+    free(hiddenLayers->hiddenLayers[i]);
+  }
+  free(hiddenLayers);
 }
 
+//free space on heap for output layer
 void freeOutputLayer(outputLayer *outputLayer){
-  
+  for(int i = 0; i <= OUTPUTWIDTH; i ++){
+    free(outputLayer->nodes[i]);
+  }
+  free(outputLayer);
 }
 
+//free space on heap for network
 void freeNetwork(network *net){
   freeInputLayer(net->inputLayer);
   freeHiddenLayers(net->hiddenLayers);
   freeOutputLayer(net->outputLayer);
+  free(net);
+  printf("Network destroyed\n");
 }
 
 //testing --------------------------------------------------------------
@@ -213,5 +235,5 @@ void testNetwork(){
 
 int main(int n, char *args[n]){
   network *net = generateNetwork();
-  printf("yeeet\n");
+  freeNetwork(net);
 }
