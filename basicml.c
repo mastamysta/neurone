@@ -119,12 +119,12 @@ void predictHiddenLayers(hiddenLayers *hiddenLayers, inputLayer *inputLayer){
   for(int i = 0; i <= INPUTWIDTH - 1; i ++){
     //for each node in the first hidden layer
     for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
-      inputs[i * j] = inputLayer->nodes[i]->outputs[j].weight * inputLayer->nodes[i]->value;
+      inputs[(i * INPUTWIDTH) + j] = inputLayer->nodes[i]->outputs[j].weight * inputLayer->nodes[i]->value;
     }
   }
+  predictHiddenLayer(hiddenLayers->hiddenLayers[0], &inputs);
   free(inputs);
   inputs = malloc(sizeof(float) * HIDDENWIDTH * HIDDENWIDTH);
-  predictHiddenLayer(hiddenLayers->hiddenLayers[0], &inputs);
   //predict values of all other layers based on inputs from previous layer
   //for each hidden layer
   for(int i = 1; i <= HIDDENDEPTH - 1; i ++){
@@ -132,7 +132,7 @@ void predictHiddenLayers(hiddenLayers *hiddenLayers, inputLayer *inputLayer){
     for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
       //for each edge in this node
       for(int k = 0; k <= HIDDENWIDTH - 1; k ++){
-        inputs[j * k] = hiddenLayers->hiddenLayers[i - 1]->nodes[j]->outputs[k].weight * hiddenLayers->hiddenLayers[i - 1]->nodes[j]->value;
+        inputs[(j * HIDDENWIDTH) + k] = hiddenLayers->hiddenLayers[i - 1]->nodes[j]->outputs[k].weight * hiddenLayers->hiddenLayers[i - 1]->nodes[j]->value;
       }
     }
     predictHiddenLayer(hiddenLayers->hiddenLayers[i], &inputs);
@@ -147,8 +147,7 @@ void predictOutputLayer(outputLayer *outputLayer, hiddenLayer *hiddenLayer){
   for(int i = 0; i <= HIDDENWIDTH - 1; i ++){
     //for each edge in this node
     for(int j = 0; j <= OUTPUTWIDTH - 1; j ++){
-      inputs[i * j] = hiddenLayer->nodes[i]->outputs[j].weight * hiddenLayer->nodes[i]->value;
-      //printf("%f\n", inputs[i * j]);
+      inputs[(i * HIDDENWIDTH) + j] = hiddenLayer->nodes[i]->outputs[j].weight * hiddenLayer->nodes[i]->value;
     }
   }
   //for each node in last hidden layer
@@ -156,7 +155,6 @@ void predictOutputLayer(outputLayer *outputLayer, hiddenLayer *hiddenLayer){
     //for each node in output layer
     for(int j = 0; j <= OUTPUTWIDTH - 1; j ++){
       outputLayer->nodes[j]->value += outputLayer->nodes[j]->weight * inputs[(i * HIDDENWIDTH) + j];
-      //printf("%f\n", outputLayer->nodes[j]->value);
     }
   }
   free(inputs);
@@ -400,10 +398,9 @@ void testPredictHiddenLayers(){
   predictHiddenLayers(net->hiddenLayers, net->inputLayer);
 
   //assertions
-  printNodeValues(net);
-  assert(net->hiddenLayers->hiddenLayers[0]->nodes[0]->value == (float)3);
-  assert(net->hiddenLayers->hiddenLayers[1]->nodes[1]->value == (float)12);
-  assert(net->hiddenLayers->hiddenLayers[2]->nodes[2]->value == (float)48);
+  assert(net->hiddenLayers->hiddenLayers[0]->nodes[0]->value == (float)1 * INPUTWIDTH);
+  assert(net->hiddenLayers->hiddenLayers[1]->nodes[1]->value == (float)1 * INPUTWIDTH * HIDDENWIDTH);
+  assert(net->hiddenLayers->hiddenLayers[2]->nodes[2]->value == (float)1 * INPUTWIDTH * HIDDENWIDTH * HIDDENWIDTH);
 
   free(inputs);
   freeNetwork(net);
@@ -420,10 +417,14 @@ void testPredictOutputLayer(){
   predictInputLayer(net->inputLayer, &inputs);
   predictHiddenLayers(net->hiddenLayers, net->inputLayer);
   predictOutputLayer(net->outputLayer, net->hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]);
-  printf("%f\n", net->hiddenLayers->hiddenLayers[2]->nodes[2]->value);
   //assertions
   printNodeValues(net);
-  assert(net->outputLayer->nodes[2]->value == (float)1);
+  //assertions
+  assert(net->hiddenLayers->hiddenLayers[0]->nodes[0]->value == (float)1 * INPUTWIDTH);
+  assert(net->hiddenLayers->hiddenLayers[1]->nodes[1]->value == (float)1 * INPUTWIDTH * HIDDENWIDTH);
+  assert(net->hiddenLayers->hiddenLayers[2]->nodes[2]->value == (float)1 * INPUTWIDTH * HIDDENWIDTH * HIDDENWIDTH);
+  assert(net->outputLayer->nodes[2]->value == (float)1 * INPUTWIDTH * HIDDENWIDTH * HIDDENWIDTH * HIDDENWIDTH);
+
 
   free(inputs);
   freeNetwork(net);
