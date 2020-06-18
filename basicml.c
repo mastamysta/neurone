@@ -130,7 +130,7 @@ void predictHiddenLayers(hiddenLayers *hiddenLayers, inputLayer *inputLayer){
   for(int i = 1; i <= HIDDENDEPTH - 1; i ++){
     //for each node in the previous layer
     for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
-      //for each node in this layer
+      //for each edge in this node
       for(int k = 0; k <= HIDDENWIDTH - 1; k ++){
         inputs[j * k] = hiddenLayers->hiddenLayers[i - 1]->nodes[j]->outputs[k].weight * hiddenLayers->hiddenLayers[i - 1]->nodes[j]->value;
       }
@@ -142,7 +142,24 @@ void predictHiddenLayers(hiddenLayers *hiddenLayers, inputLayer *inputLayer){
 
 //predict values in output layer
 void predictOutputLayer(outputLayer *outputLayer, hiddenLayer *hiddenLayer){
-
+  float *inputs = malloc(sizeof(float) * HIDDENWIDTH * OUTPUTWIDTH);
+  //for each node in hidden layer
+  for(int i = 0; i <= HIDDENWIDTH - 1; i ++){
+    //for each edge in this node
+    for(int j = 0; j <= OUTPUTWIDTH - 1; j ++){
+      inputs[i * j] = hiddenLayer->nodes[i]->outputs[j].weight * hiddenLayer->nodes[i]->value;
+      //printf("%f\n", inputs[i * j]);
+    }
+  }
+  //for each node in last hidden layer
+  for(int i = 0; i <= HIDDENWIDTH - 1; i ++){
+    //for each node in output layer
+    for(int j = 0; j <= OUTPUTWIDTH - 1; j ++){
+      outputLayer->nodes[j]->value += outputLayer->nodes[j]->weight * inputs[(i * HIDDENWIDTH) + j];
+      //printf("%f\n", outputLayer->nodes[j]->value);
+    }
+  }
+  free(inputs);
 }
 
 //predict values at all nodes in the network
@@ -316,6 +333,7 @@ void freeNetwork(network *net){
 
 //testing --------------------------------------------------------------
 
+//test network generation and deletion functions
 void testGenerateNetwork(){
   network *net = generateNetwork();
   printf("Network generation passed test\n\n");
@@ -323,6 +341,7 @@ void testGenerateNetwork(){
   printf("Network deletion passed test\n\n");
 }
 
+//test random noise generator function works between bounds of 0 and 1
 void testGenerateNoise(int iterations){
   float randomValue;
   for(int i = 0; i <= iterations; i ++){
@@ -333,6 +352,7 @@ void testGenerateNoise(int iterations){
   printf("Noise generattion passed %i test iterations within bounds\n\n", iterations);
 }
 
+//test the prediction functtion for the input layer
 void testPredictInputLayer(){
   network *net = generateNetwork();
   float *inputs = malloc(sizeof(float) * 3);
@@ -349,6 +369,7 @@ void testPredictInputLayer(){
   printf("Input layer predictions passed tests\n\n");
 }
 
+//test the prediction function for the hidden layers
 void testPredictHiddenLayers(){
   network *net = generateNetwork();
   float *inputs = malloc(sizeof(float) * 3);
@@ -357,22 +378,46 @@ void testPredictHiddenLayers(){
   }
   predictInputLayer(net->inputLayer, &inputs);
   predictHiddenLayers(net->hiddenLayers, net->inputLayer);
-  //assert(net->hiddenLayers->hiddenLayers[2]->nodes[2]->value == (float)1);
+
+  //assertions
+  assert(net->hiddenLayers->hiddenLayers[0]->nodes[0]->value == (float)3);
+  assert(net->hiddenLayers->hiddenLayers[1]->nodes[1]->value == (float)12);
+  assert(net->hiddenLayers->hiddenLayers[2]->nodes[2]->value == (float)48);
 
   free(inputs);
   freeNetwork(net);
   printf("Hidden layer predictions passed tests\n\n");
 }
 
+//test the predicition function for the output layer
 void testPredictOutputLayer(){
+  network *net = generateNetwork();
+  float *inputs = malloc(sizeof(float) * 3);
+  for(int i = 0; i <= 2; i ++){
+    inputs[i] = 1;
+  }
+  predictInputLayer(net->inputLayer, &inputs);
+  predictHiddenLayers(net->hiddenLayers, net->inputLayer);
+  predictOutputLayer(net->outputLayer, net->hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]);
+  printf("%f\n", net->hiddenLayers->hiddenLayers[2]->nodes[2]->value);
+  //assertions
+  for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
+    printf("%f\n", net->outputLayer->nodes[i]->value);
+  }
+  assert(net->outputLayer->nodes[2]->value == (float)1);
 
+  free(inputs);
+  freeNetwork(net);
+  printf("Output layer predictions passed tests\n\n");
 }
 
+//main test runner
 void test(){
   testGenerateNetwork();
   testGenerateNoise(100);
   testPredictInputLayer();
   testPredictHiddenLayers();
+  testPredictOutputLayer();
 
   printf("All tests passed\nExiting...\n");
 }
