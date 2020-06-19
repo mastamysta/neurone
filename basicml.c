@@ -7,7 +7,7 @@
 //HYPERPARAMETERS
 const int INPUTWIDTH = 3;
 const int HIDDENDEPTH = 3;
-const int HIDDENWIDTH = 3;
+const int HIDDENWIDTH = 6;
 const int OUTPUTWIDTH = 3;
 
 //structures ------------------------------------------------
@@ -79,16 +79,6 @@ struct network{
 };
 typedef struct network network;
 
-//training functions -----------------------------------------------------
-
-//a random float value from 0-1 TODO:ADD DISTRIBUTION TYPES AND MONITOR EFFECTS
-float generateNoise(){
-  const float MAX = 1;
-  //generates a float value from 0 to 1 randomly
-  float x = (float)rand()/(float)(RAND_MAX/MAX);
-  return x;
-}
-
 //evaluation functions ------------------------------------------------
 
 //predict values at input layer
@@ -101,12 +91,11 @@ void predictInputLayer(inputLayer *inputLayer, float *inputs[]){
 }
 
 //predict values in one hidden layer
-void predictHiddenLayer(hiddenLayer *hiddenLayer, float *inputs[]){
-  int layerWidth = hiddenLayer->width;
-  for(int i = 0; i <= layerWidth - 1; i ++){
-    for(int j = 0; j <= INPUTWIDTH - 1; j ++){
+void predictHiddenLayer(hiddenLayer *hiddenLayer, float *inputs[], int previousLayerWidth){
+  for(int j = 0; j <= previousLayerWidth - 1; j ++){
+    for(int i = 0; i <= HIDDENWIDTH - 1; i ++){
       float weight = hiddenLayer->nodes[i]->weight;
-      hiddenLayer->nodes[i]->value += (*inputs)[(j * INPUTWIDTH) + i] * weight;
+      hiddenLayer->nodes[i]->value += ((*inputs)[(j * HIDDENWIDTH) + i]) * weight;
     }
   }
 }
@@ -119,12 +108,13 @@ void predictHiddenLayers(hiddenLayers *hiddenLayers, inputLayer *inputLayer){
   for(int i = 0; i <= INPUTWIDTH - 1; i ++){
     //for each node in the first hidden layer
     for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
-      inputs[(i * INPUTWIDTH) + j] = inputLayer->nodes[i]->outputs[j].weight * inputLayer->nodes[i]->value;
+      inputs[(i * HIDDENWIDTH) + j] = inputLayer->nodes[i]->outputs[j].weight * inputLayer->nodes[i]->value;
+      printf("INDEX: %i    Input Node: %i  Input val: %f  Edgeweight: %f  Nodeval: %f\n", (i * HIDDENWIDTH) + j, i, inputs[i * INPUTWIDTH + j], inputLayer->nodes[i]->outputs[j].weight, inputLayer->nodes[i]->value);
     }
   }
-  predictHiddenLayer(hiddenLayers->hiddenLayers[0], &inputs);
+  predictHiddenLayer(hiddenLayers->hiddenLayers[0], &inputs, INPUTWIDTH);
   free(inputs);
-  inputs = malloc(sizeof(float) * HIDDENWIDTH * HIDDENWIDTH);
+  float *newInputs = malloc(sizeof(float) * HIDDENWIDTH * HIDDENWIDTH);
   //predict values of all other layers based on inputs from previous layer
   //for each hidden layer
   for(int i = 1; i <= HIDDENDEPTH - 1; i ++){
@@ -133,11 +123,13 @@ void predictHiddenLayers(hiddenLayers *hiddenLayers, inputLayer *inputLayer){
       //for each edge in this node
       for(int k = 0; k <= HIDDENWIDTH - 1; k ++){
         inputs[(j * HIDDENWIDTH) + k] = hiddenLayers->hiddenLayers[i - 1]->nodes[j]->outputs[k].weight * hiddenLayers->hiddenLayers[i - 1]->nodes[j]->value;
+        //debug input array and edge weights
+        //printf("INDEX: %i    Input Node: %i  Input val: %f  Edgeweight: %f  Nodeval: %f\n", (j * HIDDENWIDTH) + k, j, inputs[(j * HIDDENWIDTH) + k], hiddenLayers->hiddenLayers[i]->nodes[j]->outputs[k].weight, hiddenLayers->hiddenLayers[i - 1]->nodes[j]->value);
       }
     }
-    predictHiddenLayer(hiddenLayers->hiddenLayers[i], &inputs);
+    predictHiddenLayer(hiddenLayers->hiddenLayers[i], &inputs, HIDDENWIDTH);
   }
-  free(inputs);
+  free(newInputs);
 }
 
 //predict values in output layer
@@ -165,6 +157,25 @@ void predict(network *net, float* inputs[INPUTWIDTH - 1]){
   predictInputLayer(net->inputLayer, inputs);
   predictHiddenLayers(net->hiddenLayers, net->inputLayer);
   predictOutputLayer(net->outputLayer, net->hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]);
+}
+
+//training functions -----------------------------------------------------
+
+//a random float value from 0-1 TODO:ADD DISTRIBUTION TYPES AND MONITOR EFFECTS
+float generateNoise(){
+  const float MAX = 1;
+  //generates a float value from 0 to 1 randomly
+  float x = (float)rand()/(float)(RAND_MAX/MAX);
+  return x;
+}
+
+//calculate error squared for a dataset
+float calculateError(network *net, float *label[]){
+  float error = 0;
+  for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
+    error += pow(net->outputLayer->nodes[i]->value - (*label)[i], 2);
+  }
+  return error;
 }
 
 //initialization functions --------------------------------------------------
@@ -379,6 +390,7 @@ void testPredictInputLayer(){
   }
   predictInputLayer(net->inputLayer, &inputs);
   
+  printNodeValues(net);
   assert(net->inputLayer->nodes[0]->value == 0);
   assert(net->inputLayer->nodes[1]->value == 1);
   assert(net->inputLayer->nodes[2]->value == 2);
@@ -391,16 +403,18 @@ void testPredictInputLayer(){
 void testPredictHiddenLayers(){
   network *net = generateNetwork();
   float *inputs = malloc(sizeof(float) * 3);
-  for(int i = 0; i <= 2; i ++){
-    inputs[i] = 1;
+  float sum = 0;
+  for(int i = 0; i <= INPUTWIDTH - 1; i ++){
+    inputs[i] = i * 5;
+    sum += inputs[i];
   }
   predictInputLayer(net->inputLayer, &inputs);
   predictHiddenLayers(net->hiddenLayers, net->inputLayer);
-
   //assertions
-  assert(net->hiddenLayers->hiddenLayers[0]->nodes[0]->value == (float)1 * INPUTWIDTH);
-  assert(net->hiddenLayers->hiddenLayers[1]->nodes[1]->value == (float)1 * INPUTWIDTH * HIDDENWIDTH);
-  assert(net->hiddenLayers->hiddenLayers[2]->nodes[2]->value == (float)1 * INPUTWIDTH * HIDDENWIDTH * HIDDENWIDTH);
+  printNodeValues(net);
+  assert(net->hiddenLayers->hiddenLayers[0]->nodes[0]->value == (float)sum);
+  assert(net->hiddenLayers->hiddenLayers[1]->nodes[1]->value == (float)sum * HIDDENWIDTH);
+  assert(net->hiddenLayers->hiddenLayers[2]->nodes[2]->value == (float)sum * HIDDENWIDTH * HIDDENWIDTH);
 
   free(inputs);
   freeNetwork(net);
@@ -411,33 +425,56 @@ void testPredictHiddenLayers(){
 void testPredictOutputLayer(){
   network *net = generateNetwork();
   float *inputs = malloc(sizeof(float) * 3);
-  for(int i = 0; i <= 2; i ++){
-    inputs[i] = 1;
+  float sum = 0;
+  for(int i = 0; i <= INPUTWIDTH - 1; i ++){
+    inputs[i] = i;
+    sum += i;
   }
   predictInputLayer(net->inputLayer, &inputs);
   predictHiddenLayers(net->hiddenLayers, net->inputLayer);
   predictOutputLayer(net->outputLayer, net->hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]);
   //assertions
   printNodeValues(net);
-  //assertions
-  assert(net->hiddenLayers->hiddenLayers[0]->nodes[0]->value == (float)1 * INPUTWIDTH);
-  assert(net->hiddenLayers->hiddenLayers[1]->nodes[1]->value == (float)1 * INPUTWIDTH * HIDDENWIDTH);
-  assert(net->hiddenLayers->hiddenLayers[2]->nodes[2]->value == (float)1 * INPUTWIDTH * HIDDENWIDTH * HIDDENWIDTH);
-  assert(net->outputLayer->nodes[2]->value == (float)1 * INPUTWIDTH * HIDDENWIDTH * HIDDENWIDTH * HIDDENWIDTH);
-
+  assert(net->hiddenLayers->hiddenLayers[0]->nodes[0]->value == (float)sum);
+  assert(net->hiddenLayers->hiddenLayers[1]->nodes[1]->value == (float)sum * HIDDENWIDTH);
+  assert(net->hiddenLayers->hiddenLayers[2]->nodes[2]->value == (float)sum * HIDDENWIDTH * HIDDENWIDTH);
+  assert(net->outputLayer->nodes[2]->value == (float)(sum * pow(HIDDENWIDTH, HIDDENDEPTH)));
 
   free(inputs);
   freeNetwork(net);
   printf("Output layer predictions passed tests\n\n");
 }
 
+//test the error calculation function
+testCalculateError(){
+  network *net = generateNetwork();
+  float *inputs = malloc(sizeof(float) * INPUTWIDTH);
+  for(int i = 0; i <= INPUTWIDTH - 1; i ++){
+    inputs[i] = 1;
+  }
+  predict(net, &inputs);
+  float *labels = malloc(sizeof(float) * OUTPUTWIDTH);
+  for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
+    labels[i] = 1 * INPUTWIDTH * pow(HIDDENWIDTH, HIDDENDEPTH);
+  }
+  float error = calculateError(net, &labels);
+  printNodeValues(net);
+  assert(error == 0);
+
+  free(inputs);
+  free(labels);
+  freeNetwork(net);
+  printf("Error calculation passed tests\n");
+}
+
 //main test runner
 void test(){
-  testGenerateNetwork();
-  testGenerateNoise(100);
-  testPredictInputLayer();
-  testPredictHiddenLayers();
+ // testGenerateNetwork();
+  //testGenerateNoise(100);
+  //testPredictInputLayer();
+  //testPredictHiddenLayers();
   testPredictOutputLayer();
+  //testCalculateError();
 
   printf("All tests passed\nExiting...\n");
 }
