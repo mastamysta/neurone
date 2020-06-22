@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
 
 //HYPERPARAMETERS
 const int INPUTWIDTH = 3;
@@ -12,6 +13,18 @@ const int OUTPUTWIDTH = 3;
 
 //structures ------------------------------------------------
 
+//data storage structure
+struct column{
+  float *entry;
+};
+typedef struct column column;
+
+struct table{
+  int width;
+  int depth;
+  column *columns[];
+};
+typedef struct table table;
 
 //low level structures
 struct edge{
@@ -78,6 +91,14 @@ struct network{
   hiddenLayers *hiddenLayers;
 };
 typedef struct network network;
+
+//data table construction functions ----------------------------------------------
+
+table *createTable(int num, ...){
+  va_list valist;
+  va_start(valist, num);
+  
+}
 
 //evaluation functions ------------------------------------------------
 
@@ -182,9 +203,9 @@ void backPropagate(){
 
 }
 
-void train(network *net, float *data[], float *labels[] ,int epochs){
+void train(network *net, table *data, table *labels,int epochs){
   for(int i = 0; i <= epochs - 1; i ++){
-
+    
   }
 }
 
