@@ -178,6 +178,16 @@ float calculateError(network *net, float *label[]){
   return error;
 }
 
+void backPropagate(){
+
+}
+
+void train(network *net, float *data[], float *labels[] ,int epochs){
+  for(int i = 0; i <= epochs - 1; i ++){
+
+  }
+}
+
 //initialization functions --------------------------------------------------
 
 //set parameters in input layer to be identity
