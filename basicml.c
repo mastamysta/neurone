@@ -97,31 +97,27 @@ typedef struct network network;
 
 //create a table datastructure to feed into network (or use as labels)
 //takes an array of columns
-table *compileColumns(int num, ...){
+table *compileColumns(int num, column *columns[]){
   //initialise variable list
-  va_list valist;
-  va_start(valist, num);
 
   //allocate table memory on heap and assign depth and width and first column vals
   table *table = malloc(sizeof(table) + sizeof(column *) * num);
   table->width = num;
-  column *col = va_arg(valist, column *);
+  column *col = columns[0];
   int lengthCheck = col->length;
   table->depth = col->length;
   table->columns[0] = col;
 
   //check lengths of all subsequent column and then assign to table
   for(int i = 1; i <= num - 1; i ++){
-    col = va_arg(valist, column *);
+    col = columns[i];
     //if length doesnt match first column print error and return null pointer
     if(col->length != lengthCheck){
       printf("Column lengths do not match\nFirst Column %i\n%i th Column: %i", lengthCheck, i, col->length);
-      va_end(valist);
       return NULL;
     }
     table->columns[i] = col;
   }
-  va_end(valist);
   return table;
 }
 
@@ -142,13 +138,14 @@ table *createTable(int num, ...){
   va_list valist;
   va_start(valist, num);
   for(int i = 0; i <= num - 1; i ++){
-    float col[] = va_arg(valist, float);
+    float col[] = va_arg(valist, float *);
     int length = sizeof(col) / sizeof(float);
     printf("%i\n", length);
     columns[i] = createColumn(length, col);
   }
   va_end(valist);
-  return createTable(num, columns)
+  table *table = createTable(num, columns);
+  return table;
 }
 
 //evaluation functions ------------------------------------------------
@@ -279,11 +276,9 @@ void backPropagate(){
 
 }
 
-void train(network *net, table *data, table *labels,int epochs){
-  for(int i = 0; i <= epochs - 1; i ++){
-    
-  }
-}
+// void train(network *net, table *data, table *labels,int epochs){
+  
+// }
 
 //initialization functions --------------------------------------------------
 
@@ -553,7 +548,7 @@ void testPredictOutputLayer(){
 }
 
 //test the error calculation function
-testCalculateError(){
+void testCalculateError(){
   network *net = generateNetwork();
   float *inputs = malloc(sizeof(float) * INPUTWIDTH);
   for(int i = 0; i <= INPUTWIDTH - 1; i ++){
