@@ -11,6 +11,10 @@ const int HIDDENDEPTH = 3;
 const int HIDDENWIDTH = 6;
 const int OUTPUTWIDTH = 3;
 
+//layer type enumeration-------------------------------------
+enum layerType{inputLayer, hiddenlayer, outputLayer};
+typedef enum layerType layerType;
+
 //structures ------------------------------------------------
 
 //data storage structure
@@ -97,7 +101,10 @@ typedef struct network network;
 table *createTable(int num, ...){
   va_list valist;
   va_start(valist, num);
-  
+  table *table = malloc(sizeof(table) + sizeof(column *) * num);
+  for(int i = 0; i <= num - 1; i ++){
+
+  }
 }
 
 //evaluation functions ------------------------------------------------
@@ -197,6 +204,15 @@ float calculateError(network *net, float *label[]){
     error += pow(net->outputLayer->nodes[i]->value - (*label)[i], 2);
   }
   return error;
+}
+
+//assign an edge weight
+void assignEdgeWeight(layerType layerType, int layerNo, int node, int edge){
+
+}
+
+void assignNodeWeight(layerType layerType, int layerNo, int node){
+
 }
 
 void backPropagate(){
