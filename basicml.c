@@ -16,7 +16,7 @@ const int OUTPUTWIDTH = 3;
 //data storage structure
 struct column{
   int length;
-  float *entry;
+  float *values[];
 };
 typedef struct column column;
 
@@ -96,8 +96,8 @@ typedef struct network network;
 //data table construction functions ----------------------------------------------
 
 //create a table datastructure to feed into network (or use as labels)
-//takes variable number of column structs
-table *createTable(int num, ...){
+//takes an array of columns
+table *compileColumns(int num, ...){
   //initialise variable list
   va_list valist;
   va_start(valist, num);
@@ -116,11 +116,39 @@ table *createTable(int num, ...){
     //if length doesnt match first column print error and return null pointer
     if(col->length != lengthCheck){
       printf("Column lengths do not match\nFirst Column %i\n%i th Column: %i", lengthCheck, i, col->length);
+      va_end(valist);
       return NULL;
     }
     table->columns[i] = col;
   }
+  va_end(valist);
   return table;
+}
+
+//creates a column struct pointer from a pointer to an array of floats
+column *createColumn(int length, float values[]){
+  column *column = malloc(sizeof(column) + sizeof(float *) * length);
+  column->length = length;
+  for(int i = 0; i <= length - 1; i ++){
+    column->values[i] = &values[i];
+  }
+  return column;
+}
+
+//creates a table from a variable number of float arrays
+//takes a variable number of arrays of floats
+table *createTable(int num, ...){
+  column *columns[num];
+  va_list valist;
+  va_start(valist, num);
+  for(int i = 0; i <= num - 1; i ++){
+    float col[] = va_arg(valist, float);
+    int length = sizeof(col) / sizeof(float);
+    printf("%i\n", length);
+    columns[i] = createColumn(length, col);
+  }
+  va_end(valist);
+  return createTable(num, columns)
 }
 
 //evaluation functions ------------------------------------------------
