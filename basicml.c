@@ -11,10 +11,6 @@ const int HIDDENDEPTH = 3;
 const int HIDDENWIDTH = 6;
 const int OUTPUTWIDTH = 3;
 
-//layer type enumeration-------------------------------------
-enum layerType{inputLayer, hiddenlayer, outputLayer};
-typedef enum layerType layerType;
-
 //structures ------------------------------------------------
 
 //data storage structure
@@ -206,13 +202,29 @@ float calculateError(network *net, float *label[]){
   return error;
 }
 
-//assign an edge weight
-void assignEdgeWeight(layerType layerType, int layerNo, int node, int edge){
-
+//assign a output layer node weight
+void assignOutputNodeWeight(network *net, int node, float value){
+  net->outputLayer->nodes[node]->weight = value;
 }
 
-void assignNodeWeight(layerType layerType, int layerNo, int node){
+//assign a hidden layer edge weight
+void assignHiddenEdgeWeight(network *net, int layer, int node, int edge, float value){
+  net->hiddenLayers->hiddenLayers[layer]->nodes[node]->outputs[edge].weight = value;
+}
 
+//assign a hidden layer node weight
+void assignHiddenNodeWeight(network *net, int layer, int node, float value){
+  net->hiddenLayers->hiddenLayers[layer]->nodes[node]->weight = value;
+}
+
+//assign an input layer edge weight
+void assignInputEdgeWeight(network *net, int node, int edge, float value){
+  net->inputLayer->nodes[node]->outputs[edge].weight = value;
+}
+
+//assign an input node weight
+void assignInputNodeWeight(network *net, int node, float value){
+  net->inputLayer->nodes[node]->weight = value;
 }
 
 void backPropagate(){
