@@ -15,6 +15,7 @@ const int OUTPUTWIDTH = 3;
 
 //data storage structure
 struct column{
+  int length;
   float *entry;
 };
 typedef struct column column;
@@ -94,13 +95,32 @@ typedef struct network network;
 
 //data table construction functions ----------------------------------------------
 
+//create a table datastructure to feed into network (or use as labels)
+//takes variable number of column structs
 table *createTable(int num, ...){
+  //initialise variable list
   va_list valist;
   va_start(valist, num);
-  table *table = malloc(sizeof(table) + sizeof(column *) * num);
-  for(int i = 0; i <= num - 1; i ++){
 
+  //allocate table memory on heap and assign depth and width and first column vals
+  table *table = malloc(sizeof(table) + sizeof(column *) * num);
+  table->width = num;
+  column *col = va_arg(valist, column *);
+  int lengthCheck = col->length;
+  table->depth = col->length;
+  table->columns[0] = col;
+
+  //check lengths of all subsequent column and then assign to table
+  for(int i = 1; i <= num - 1; i ++){
+    col = va_arg(valist, column *);
+    //if length doesnt match first column print error and return null pointer
+    if(col->length != lengthCheck){
+      printf("Column lengths do not match\nFirst Column %i\n%i th Column: %i", lengthCheck, i, col->length);
+      return NULL;
+    }
+    table->columns[i] = col;
   }
+  return table;
 }
 
 //evaluation functions ------------------------------------------------
