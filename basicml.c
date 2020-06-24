@@ -16,7 +16,7 @@ const int OUTPUTWIDTH = 3;
 //data storage structure
 struct column{
   int length;
-  float *values[];
+  float values[];
 };
 typedef struct column column;
 
@@ -122,30 +122,38 @@ table *compileColumns(int num, column *columns[]){
 }
 
 //creates a column struct pointer from a pointer to an array of floats
-column *createColumn(int length, float values[]){
+column *createColumn(int length, float *values){
   column *column = malloc(sizeof(column) + sizeof(float *) * length);
   column->length = length;
-  for(int i = 0; i <= length - 1; i ++){
-    column->values[i] = &values[i];
+  //ignoring first index as this is a lenth marker for each column
+  for(int i = 1; i <= length; i ++){
+    column->values[i - 1] = *(values + i);
+    printf("%f\n", column->values[i - 1]);
   }
   return column;
 }
 
 //creates a table from a variable number of float arrays
-//takes a variable number of arrays of floats
+//takes a variable number of pointers to arrays of floats
 table *createTable(int num, ...){
   column *columns[num];
   va_list valist;
   va_start(valist, num);
   for(int i = 0; i <= num - 1; i ++){
-    float col[] = va_arg(valist, float *);
-    int length = sizeof(col) / sizeof(float);
-    printf("%i\n", length);
+    float *col = va_arg(valist, float *);
+    //length is stored in first index in array
+    int length = *col;
+    printf("Column Length: %i\n", length);
     columns[i] = createColumn(length, col);
   }
   va_end(valist);
-  table *table = createTable(num, columns);
+  table *table = compileColumns(num, columns);
   return table;
+}
+
+//destroys a table structure
+void destroyTable(table *table){
+
 }
 
 //evaluation functions ------------------------------------------------
@@ -178,7 +186,8 @@ void predictHiddenLayers(hiddenLayers *hiddenLayers, inputLayer *inputLayer){
     //for each node in the first hidden layer
     for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
       inputs[(i * HIDDENWIDTH) + j] = inputLayer->nodes[i]->outputs[j].weight * inputLayer->nodes[i]->value;
-      printf("INDEX: %i    Input Node: %i  Input val: %f  Edgeweight: %f  Nodeval: %f\n", (i * HIDDENWIDTH) + j, i, inputs[i * INPUTWIDTH + j], inputLayer->nodes[i]->outputs[j].weight, inputLayer->nodes[i]->value);
+      //debug input array and edge weights
+      //printf("INDEX: %i    Input Node: %i  Input val: %f  Edgeweight: %f  Nodeval: %f\n", (i * HIDDENWIDTH) + j, i, inputs[i * INPUTWIDTH + j], inputLayer->nodes[i]->outputs[j].weight, inputLayer->nodes[i]->value);
     }
   }
   predictHiddenLayer(hiddenLayers->hiddenLayers[0], &inputs, INPUTWIDTH);
@@ -569,14 +578,30 @@ void testCalculateError(){
   printf("Error calculation passed tests\n");
 }
 
+void testCreateTable(){
+  float testData[] = {3, 0, 1, 2};
+  float col2[] = {3, 2, 3, 4};
+  for(int i = 1; i <= testData[0]; i ++){
+    printf("Data Entry: %i  -  %f\n", i, testData[i]);
+  }
+  table *table = createTable(2, testData, col2);
+  for(int i = 0; i <= 2; i ++){
+    printf("Table Index %i: %f\n", i, table->columns[0]->values[i]);
+  }
+  for(int i = 0; i <= 2; i ++){
+    printf("Table Index %i: %f\n", i, table->columns[1]->values[i]);
+  }
+}
+
 //main test runner
 void test(){
  // testGenerateNetwork();
   //testGenerateNoise(100);
   //testPredictInputLayer();
   //testPredictHiddenLayers();
-  testPredictOutputLayer();
+  //testPredictOutputLayer();
   //testCalculateError();
+  testCreateTable();
 
   printf("All tests passed\nExiting...\n");
 }
