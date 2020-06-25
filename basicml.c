@@ -234,7 +234,17 @@ void predictOutputLayer(outputLayer *outputLayer, hiddenLayer *hiddenLayer){
 }
 
 //predict values at all nodes in the network
-void predict(network *net, float* inputs[INPUTWIDTH - 1]){
+void predict(network *net, table *table){
+  if(table->depth != INPUTWIDTH){
+    printf("Input features have wrong shape size %i doesnt fit networks size %i", table->depth, INPUTWIDTH);
+    freeNetwork(net);
+    destroyTable(table);
+    exit(1);
+  }
+  float *inputs[] = malloc(sizeof(float *) * INPUTWIDTH);
+  for(int i = 0; i <= INPUTWIDTH - 1; i ++){
+    *inputs[i] = table->columns[0]->values[i];
+  }
   predictInputLayer(net->inputLayer, inputs);
   predictHiddenLayers(net->hiddenLayers, net->inputLayer);
   predictOutputLayer(net->outputLayer, net->hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]);
@@ -251,7 +261,18 @@ float generateNoise(){
 }
 
 //calculate error squared for a dataset
-float calculateError(network *net, float *label[]){
+float calculateError(network *net, table *table){
+   if(table->depth != OUTPUTWIDTH){
+    printf("Input features have wrong shape size %i doesnt fit networks size %i", table->depth, INPUTWIDTH);
+    freeNetwork(net);
+    destroyTable(table);
+    exit(1);
+  }
+  float *label[] = malloc(sizeof(float *) * INPUTWIDTH);
+  for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
+    *label[i] = table->columns[0]->values[i];
+  }
+
   float error = 0;
   for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
     error += pow(net->outputLayer->nodes[i]->value - (*label)[i], 2);
@@ -286,6 +307,11 @@ void assignInputNodeWeight(network *net, int node, float value){
 
 void backPropagate(){
 
+}
+
+float findErrorOfExample(network *net, table *features, table *labels){
+  predict(net, features);
+  float error = calculateError(net, labels);
 }
 
 // void train(network *net, table *data, table *labels,int epochs){
