@@ -123,7 +123,9 @@ table *compileColumns(int num, column *columns[]){
 
 //creates a column struct pointer from a pointer to an array of floats
 column *createColumn(int length, float *values){
+  printf("in col method\n");
   column *column = malloc(sizeof(column) + sizeof(float *) * length);
+  printf("Dies at this line ^^^\n");
   column->length = length;
   //ignoring first index as this is a lenth marker for each column
   for(int i = 1; i <= length; i ++){
@@ -631,10 +633,10 @@ void testFindErrorSquaredOfExample(){
   for(int i = 0; i <= OUTPUTWIDTH - 1; i++){
     testLabels[i + 1] = i;
   }
-  printf("here\n");
+
   table *featureTable = createTable(1, testFeatures);
   table *labelTable = createTable(1, testLabels);
-  printf("here2\n");
+  
   float error = findErrorSquaredOfExample(net, featureTable, labelTable);
   printf("%f\n", error);
 
