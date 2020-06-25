@@ -153,7 +153,10 @@ table *createTable(int num, ...){
 
 //destroys a table structure
 void destroyTable(table *table){
-
+  for(int i = 0; i <= table->width - 1; i ++){
+    free(table->columns[i]);
+  }
+  free(table);
 }
 
 //evaluation functions ------------------------------------------------
@@ -591,6 +594,8 @@ void testCreateTable(){
   for(int i = 0; i <= 2; i ++){
     printf("Table Index %i: %f\n", i, table->columns[1]->values[i]);
   }
+  destroyTable(table);
+  printf("Table creation passed tests\n");
 }
 
 //main test runner
