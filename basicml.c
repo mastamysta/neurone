@@ -290,15 +290,18 @@ void backPropagate(){
 
 float findErrorSquaredOfExample(network *net, table *features, table *labels){
   //put features into an array (JANKY)
+  printf("hereA\n");
   float featuresArray[features->depth];
   for(int i = 0; i <= features->depth - 1; i ++){
     featuresArray[i] = features->columns[0]->values[i];
   }
+  printf("hereB\n");
   //similarly put labels into an array
   float labelsArray[labels->depth];
   for(int i = 0; i <= labels->depth - 1; i ++){
     labelsArray[i] = labels->columns[0]->values[i];
-  } 
+  }
+  printf("hereC\n");
   predict(net, featuresArray);
   float errorSquared = calculateErrorSquared(net, labelsArray);
   return errorSquared;
@@ -614,13 +617,29 @@ void testCreateTable(){
   printf("Table creation passed tests\n");
 }
 
-void testFindErrorSquaredOfNetwork(){
+void testFindErrorSquaredOfExample(){
   network *net = generateNetwork();
-  float testFeatures[INPUTWIDTH];
+  float testFeatures[INPUTWIDTH + 1];
+  //first entry must be column length
+  testFeatures[0] = INPUTWIDTH;
   for(int i = 0; i <= INPUTWIDTH - 1; i++){
-    testFeatures[i] = i;
+    testFeatures[i + 1] = i;
   }
+  float testLabels[OUTPUTWIDTH + 1];
+  //first entry must be column length
+  testLabels[0] = OUTPUTWIDTH;
+  for(int i = 0; i <= OUTPUTWIDTH - 1; i++){
+    testLabels[i + 1] = i;
+  }
+  printf("here\n");
+  table *featureTable = createTable(1, testFeatures);
+  table *labelTable = createTable(1, testLabels);
+  printf("here2\n");
+  float error = findErrorSquaredOfExample(net, featureTable, labelTable);
+  printf("%f\n", error);
 
+  destroyTable(featureTable);
+  destroyTable(labelTable);
   freeNetwork(net);
 }
 
@@ -632,7 +651,8 @@ void test(){
   //testPredictHiddenLayers();
   //testPredictOutputLayer();
   //testCalculateErrorSquared();
-  testCreateTable();
+  //testCreateTable();
+  testFindErrorSquaredOfExample();
 
   printf("All tests passed\nExiting...\n");
 }
