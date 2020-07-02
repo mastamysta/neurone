@@ -166,10 +166,10 @@ table *createTable(int num, ...){
 //split off a column from a table into a separate table
 table *splitColumn(table *table, int column){
   //assigned as length + 1 to allow for length identifier at 0th index
-  float *values = malloc(sizeof(float) * table->depth + 1);
-  *values = table->depth;
+  float values[table->depth + 1];
+  values[0] = table->depth;
   for(int i = 1; i <= table->depth; i ++){
-    *(values + i) = table->columns[column]->values[i - 1];
+    values[i] = table->columns[column]->values[i - 1];
   }
   return createTable(1, values);
 }
@@ -620,12 +620,13 @@ void finiteRandomInstanceStochasticEpoch(network *net, table *features, table *l
   table *exampleFeatures;
   table *exampleLabels;
   //for each example in the training set
-  for(int i = 0; i <= features->width; i ++){
+  for(int i = 0; i <= features->width - 1; i ++){
     exampleFeatures = splitColumn(features, i);
     exampleLabels = splitColumn(labels, i);
-    singleExampleFiniteRandomInstanceStochastic(net, features, labels, instances);
+    singleExampleFiniteRandomInstanceStochastic(net, exampleFeatures, exampleLabels, instances);
   }
-  //may require tables to be freed????
+  destroyTable(exampleFeatures);
+  destroyTable(exampleLabels);
 }
 
 //train the network by branching randomly and selecting the best branch for each item
@@ -842,7 +843,36 @@ void testPower(){
 }
 
 void testFiniteRandomInstanceStochasticTraining(){
-  
+  network *net = generateNetwork();
+  float testFeatures1[INPUTWIDTH + 1];
+  float testFeatures2[INPUTWIDTH + 1];
+  float testFeatures3[INPUTWIDTH + 1];
+  //first entry must be column length
+  testFeatures1[0] = INPUTWIDTH;
+  testFeatures2[0] = INPUTWIDTH;
+  testFeatures3[0] = INPUTWIDTH;
+  for(int i = 0; i <= INPUTWIDTH - 1; i++){
+    testFeatures[i + 1] = i;
+  }
+  float testLabels[OUTPUTWIDTH + 1];
+  //first entry must be column length
+  testLabels[0] = OUTPUTWIDTH;
+  for(int i = 0; i <= OUTPUTWIDTH - 1; i++){
+    testLabels[i + 1] = 648;
+  }
+
+  table *featureTable = createTable(1, testFeatures);
+  table *labelTable = createTable(1, testLabels);
+
+  float error = findErrorSquaredOfExample(net, featureTable, labelTable);
+  printf("\n\n  Single example error: %f\n", error);
+  printNodeValues(net);
+
+  assert(error == 0);
+
+  destroyTable(featureTable);
+  destroyTable(labelTable);
+  freeNetwork(net);
 }
 
 //main test runner
