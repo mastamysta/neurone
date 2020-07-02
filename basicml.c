@@ -497,22 +497,22 @@ void freeNetwork(network *net){
 
 //print out the values at each node of the network
 void printNodeValues(network *net){
-  printf("Input Layer\n");
+  printf("\n\n\n    Input Layer\n    ");
   for(int i = 0; i <= INPUTWIDTH - 1; i ++){
     printf("%f  ", net->inputLayer->nodes[i]->value);
   }
-  printf("\nHidden Layers\n");
+  printf("\n\n    Hidden Layers\n    ");
   for(int i = 0; i <= HIDDENDEPTH - 1; i ++){
     for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
       printf("%f  ", net->hiddenLayers->hiddenLayers[i]->nodes[j]->value);
     }
-    printf("\n");
+    printf("\n    ");
   }
-  printf("\nOutput Layer\n");
+  printf("\n    Output Layer\n    ");
   for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
     printf("%f  ", net->outputLayer->nodes[i]->value);
   }
-  printf("\n\n");
+  printf("\n\n\n");
 }
 
 //test network generation and deletion functions
@@ -629,7 +629,7 @@ void testCalculateErrorSquared(){
   for(int i = 0; i <= INPUTWIDTH - 1; i ++){
     inputs[i] = 1;
   }
-  predict(net, &inputs);
+  predict(net, inputs);
   float *labels = malloc(sizeof(float) * OUTPUTWIDTH);
   for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
     labels[i] = 1 * INPUTWIDTH * power(HIDDENWIDTH, HIDDENDEPTH);
@@ -700,8 +700,8 @@ void test(){
   //testPredictHiddenLayers();
   //testPredictOutputLayer();
   //testPredict();
-  testCalculateErrorSquared();
-  //testCreateTable();
+  //testCalculateErrorSquared();
+  testCreateTable();
   //testFindErrorSquaredOfExample();
   //testPower();
 
