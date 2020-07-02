@@ -497,7 +497,9 @@ network *copyNetwork(network *net){
 
 //add noise to output layer of network
 void addNoiseToOutputLayer(network *net){
-
+  for(int i = 0; i <= OUTPUTWIDTH; i ++){
+    assignOutputNodeWeight(net, i, net->outputLayer->nodes[i]->weight + generateNoise());
+  }
 }
 
 //add noise to hidden layers of given network
