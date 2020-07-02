@@ -10,6 +10,7 @@ const int INPUTWIDTH = 3;
 const int HIDDENDEPTH = 3;
 const int HIDDENWIDTH = 6;
 const int OUTPUTWIDTH = 3;
+const float RANDOMMAX= 0.05;
 
 //pow function because pow isnt included in gcc for linux?????
 
@@ -398,9 +399,8 @@ network *generateNetwork(){
 
 //a random float value from 0-1 TODO:ADD DISTRIBUTION TYPES AND MONITOR EFFECTS
 float generateNoise(){
-  const float MAX = 1;
   //generates a float value from 0 to 1 randomly
-  float x = (float)rand()/(float)(RAND_MAX/MAX);
+  float x = (float)rand()/(float)(RAND_MAX/RANDOMMAX);
   return x;
 }
 
@@ -496,16 +496,21 @@ network *copyNetwork(network *net){
 
 //return best of the random instances on given training example
 network *singleExampleFiniteRandomInstanceStochastic(network *net, table *features, table *labels, int instances){
+  //for each random instance required
+  for(int i = 0; i <= instances - 1; i ++){
 
+  }
 }
 
 //a single epoch of finite random instance stochastic training
 void finiteRandomInstanceStochasticEpoch(network *net, table *features, table *labels, int instances){
   table *exampleFeatures;
+  table *exampleLabels;
   //for each example in the training set
   for(int i = 0; i <= features->width; i ++){
     exampleFeatures = splitColumn(features, i);
-  //  singleExampleFiniteRandomInstanceStochastic(net, features);
+    exampleLabels = splitColumn(labels, i);
+    singleExampleFiniteRandomInstanceStochastic(net, features, labels, instances);
   }
 }
 
@@ -595,7 +600,7 @@ void testGenerateNoise(int iterations){
   float randomValue;
   for(int i = 0; i <= iterations; i ++){
     randomValue = generateNoise();
-    assert(randomValue <= 1);
+    assert(randomValue <= RANDOMMAX);
     assert(randomValue >= 0);
   }
   printf("Noise generattion passed %i test iterations within bounds\n\n", iterations);
@@ -763,7 +768,7 @@ void testPower(){
 //main test runner
 void test(){
  // testGenerateNetwork();
-  //testGenerateNoise(100);
+  testGenerateNoise(100);
   //testPredictInputLayer();
   //testPredictHiddenLayers();
   //testPredictOutputLayer();
@@ -771,7 +776,7 @@ void test(){
   //testCalculateErrorSquared();
   //testCreateTable();
   //testFindErrorSquaredOfExample();
-  testPower();
+  //testPower();
 
   printf("All tests passed\nExiting...\n");
 }
