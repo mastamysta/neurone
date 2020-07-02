@@ -401,7 +401,8 @@ network *generateNetwork(){
 float generateNoise(){
   //generates a float value from 0 to 1 randomly
   float x = (float)rand()/(float)(RAND_MAX/RANDOMMAX);
-  return x;
+  //normalise random value about 0
+  return x - (0.5 * RANDOMMAX);
 }
 
 //calculate error squared for a dataset
@@ -494,24 +495,24 @@ network *copyNetwork(network *net){
   return networkCopy;
 }
 
-void addNoiseToOutputLayer(outputLayer *outputLayer){
+void addNoiseToOutputLayer(network *net){
 
 }
 
-void addNoiseToHiddenLayer(hiddenLayer *hiddenLayer){
+void addNoiseToHiddenLayers(network *net){
 
 }
 
-void addNoiseToHiddenLayers(hiddenLayers *hiddenLayers){
-
-}
-
-void addNoiseToInputLayer(inputLayer *inputLayer){
-
+void addNoiseToInputLayer(network *net){
+  for(int i = 0; i <= INPUTWIDTH - 1;  i ++){
+    assignInputNodeWeight(net, i, net->inputLayer->nodes[i]->weight + generateNoise());
+  }
 }
 
 void addNoiseToNetwork(network *net){
-
+  addNoiseToInputLayer(net);
+  addNoiseToHiddenLayers(net);
+  addNoiseToOutputLayer(net);
 }
 
 //return best of the random instances on given training example
@@ -620,8 +621,8 @@ void testGenerateNoise(int iterations){
   float randomValue;
   for(int i = 0; i <= iterations; i ++){
     randomValue = generateNoise();
-    assert(randomValue <= RANDOMMAX);
-    assert(randomValue >= 0);
+    assert(randomValue <= RANDOMMAX / 2);
+    assert(randomValue >= -RANDOMMAX / 2);
   }
   printf("Noise generattion passed %i test iterations within bounds\n\n", iterations);
 }
@@ -788,7 +789,7 @@ void testPower(){
 //main test runner
 void test(){
  // testGenerateNetwork();
-  //testGenerateNoise(100);
+  testGenerateNoise(100);
   //testPredictInputLayer();
   //testPredictHiddenLayers();
   //testPredictOutputLayer();
