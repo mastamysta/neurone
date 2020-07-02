@@ -841,6 +841,10 @@ void testPower(){
   printf("Power function passed all tests\n");
 }
 
+void testFiniteRandomInstanceStochasticTraining(){
+  
+}
+
 //main test runner
 void test(){
  // testGenerateNetwork();
@@ -850,7 +854,7 @@ void test(){
   //testPredictOutputLayer();
   //testPredict();
   //testCalculateErrorSquared();
-  testCreateTable();
+  //testCreateTable();
   //testFindErrorSquaredOfExample();
   //testPower();
 
