@@ -460,7 +460,7 @@ float findErrorSquaredOfExample(network *net, table *features, table *labels){
   return errorSquared;
 }
 
-//return a pointer to a copy of the network at the pointer given
+//return a pointer to a copy of the network at the pointer given MUST BE FREED
 network *copyNetwork(network *net){
   network *networkCopy = generateNetwork();
   //copy all input layer edges and nodes
@@ -492,6 +492,26 @@ network *copyNetwork(network *net){
     assignOutputNodeWeight(networkCopy, i, net->outputLayer->nodes[i]->weight);
   }
   return networkCopy;
+}
+
+void addNoiseToOutputLayer(outputLayer *outputLayer){
+
+}
+
+void addNoiseToHiddenLayer(hiddenLayer *hiddenLayer){
+
+}
+
+void addNoiseToHiddenLayers(hiddenLayers *hiddenLayers){
+
+}
+
+void addNoiseToInputLayer(inputLayer *inputLayer){
+
+}
+
+void addNoiseToNetwork(network *net){
+
 }
 
 //return best of the random instances on given training example
@@ -768,7 +788,7 @@ void testPower(){
 //main test runner
 void test(){
  // testGenerateNetwork();
-  testGenerateNoise(100);
+  //testGenerateNoise(100);
   //testPredictInputLayer();
   //testPredictHiddenLayers();
   //testPredictOutputLayer();
