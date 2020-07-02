@@ -495,20 +495,41 @@ network *copyNetwork(network *net){
   return networkCopy;
 }
 
+//add noise to output layer of network
 void addNoiseToOutputLayer(network *net){
 
 }
 
+//add noise to hidden layers of given network
 void addNoiseToHiddenLayers(network *net){
-
-}
-
-void addNoiseToInputLayer(network *net){
-  for(int i = 0; i <= INPUTWIDTH - 1;  i ++){
-    assignInputNodeWeight(net, i, net->inputLayer->nodes[i]->weight + generateNoise());
+  //for all but final hidden layer
+  for(int i = 0; i <= HIDDENDEPTH - 2; i ++){
+    for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
+      assignHiddenNodeWeight(net, i, j, net->hiddenLayers->hiddenLayers[i]->nodes[j]->weight + generateNoise());
+      for(int k = 0; k <= HIDDENWIDTH - 1; k ++){
+        assignHiddenEdgeWeight(net, i, j, k, net->hiddenLayers->hiddenLayers[i]->nodes[j]->outputs[k].weight + generateNoise());
+      }
+    }
+  }
+  for(int i = 0; i <= HIDDENWIDTH; i ++){
+    assignHiddenNodeWeight(net, HIDDENDEPTH - 1, i, net->hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]->nodes[i]->weight + generateNoise());
+    for(int j = 0; j <= OUTPUTWIDTH; j ++){
+      assignHiddenEdgeWeight(net, HIDDENDEPTH - 1, i, j, net->hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]->nodes[i]->outputs[j].weight + generateNoise());
+    }
   }
 }
 
+//add noise to input layer of given network
+void addNoiseToInputLayer(network *net){
+  for(int i = 0; i <= INPUTWIDTH - 1;  i ++){
+    assignInputNodeWeight(net, i, net->inputLayer->nodes[i]->weight + generateNoise());
+    for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
+      assignInputEdgeWeight(net, i, j, net->inputLayer->nodes[i]->outputs[j].weight + generateNoise());
+    }
+  }
+}
+
+//add noise to all layrs in the network
 void addNoiseToNetwork(network *net){
   addNoiseToInputLayer(net);
   addNoiseToHiddenLayers(net);
