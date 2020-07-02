@@ -11,6 +11,16 @@ const int HIDDENDEPTH = 3;
 const int HIDDENWIDTH = 6;
 const int OUTPUTWIDTH = 3;
 
+//pow function because pow isnt included in gcc for linux?????
+
+float power(float base, int index){
+  float value = 1;
+  for(int i = 0; i <= index - 1; i ++){
+    value = value * base;
+  }
+  return value;
+}
+
 //structures ------------------------------------------------
 
 //data storage structure
@@ -193,6 +203,7 @@ void predictHiddenLayers(hiddenLayers *hiddenLayers, inputLayer *inputLayer){
       //printf("INDEX: %i    Input Node: %i  Input val: %f  Edgeweight: %f  Nodeval: %f\n", (i * HIDDENWIDTH) + j, i, inputs[i * INPUTWIDTH + j], inputLayer->nodes[i]->outputs[j].weight, inputLayer->nodes[i]->value);
     }
   }
+  printf("      Predicting hidden layer 0\n");
   predictHiddenLayer(hiddenLayers->hiddenLayers[0], &inputs, INPUTWIDTH);
   free(inputs);
   float *newInputs = malloc(sizeof(float) * HIDDENWIDTH * HIDDENWIDTH);
@@ -208,9 +219,11 @@ void predictHiddenLayers(hiddenLayers *hiddenLayers, inputLayer *inputLayer){
         //printf("INDEX: %i    Input Node: %i  Input val: %f  Edgeweight: %f  Nodeval: %f\n", (j * HIDDENWIDTH) + k, j, inputs[(j * HIDDENWIDTH) + k], hiddenLayers->hiddenLayers[i]->nodes[j]->outputs[k].weight, hiddenLayers->hiddenLayers[i - 1]->nodes[j]->value);
       }
     }
+    printf("      Predicting hidden layer %i\n", i);
     predictHiddenLayer(hiddenLayers->hiddenLayers[i], &inputs, HIDDENWIDTH);
   }
-  free(newInputs);
+  printf("      All hidden layers predicted\n");
+  //free(newInputs);
 }
 
 //predict values in output layer
@@ -234,10 +247,16 @@ void predictOutputLayer(outputLayer *outputLayer, hiddenLayer *hiddenLayer){
 }
 
 //predict values at all nodes in the network
-void predict(network *net, float* inputs[INPUTWIDTH - 1]){
-  predictInputLayer(net->inputLayer, inputs);
+void predict(network *net, float* inputs){
+  printf("    Starting predict input layer function\n");
+  predictInputLayer(net->inputLayer, &inputs);
+  printf("    Predict input layer function exited without error\n");
+  printf("    Starting predict hidden layers function\n");
   predictHiddenLayers(net->hiddenLayers, net->inputLayer);
+  printf("    Predict hidden layers function exited without error\n");
+  printf("    Starting predict output layer function\n");
   predictOutputLayer(net->outputLayer, net->hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]);
+  printf("    Predict output layer function exited without error\n");
 }
 
 //training functions -----------------------------------------------------
@@ -254,7 +273,7 @@ float generateNoise(){
 float calculateErrorSquared(network *net, float *label[]){
   float error = 0;
   for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
-    error += pow(net->outputLayer->nodes[i]->value - (*label)[i], 2);
+    error += power(net->outputLayer->nodes[i]->value - (*label)[i], 2);
   }
   return error;
 }
@@ -303,12 +322,13 @@ float findErrorSquaredOfExample(network *net, table *features, table *labels){
   }
   printf("hereC\n");
   predict(net, featuresArray);
+  printf("hereD\n");
   float errorSquared = calculateErrorSquared(net, labelsArray);
   return errorSquared;
 }
 
 // void train(network *net, table *data, table *labels,int epochs){
-  
+
 // }
 
 //initialization functions --------------------------------------------------
@@ -522,7 +542,7 @@ void testPredictInputLayer(){
     inputs[i] = i;
   }
   predictInputLayer(net->inputLayer, &inputs);
-  
+
   printNodeValues(net);
   assert(net->inputLayer->nodes[0]->value == 0);
   assert(net->inputLayer->nodes[1]->value == 1);
@@ -571,11 +591,35 @@ void testPredictOutputLayer(){
   assert(net->hiddenLayers->hiddenLayers[0]->nodes[0]->value == (float)sum);
   assert(net->hiddenLayers->hiddenLayers[1]->nodes[1]->value == (float)sum * HIDDENWIDTH);
   assert(net->hiddenLayers->hiddenLayers[2]->nodes[2]->value == (float)sum * HIDDENWIDTH * HIDDENWIDTH);
-  assert(net->outputLayer->nodes[2]->value == (float)(sum * pow(HIDDENWIDTH, HIDDENDEPTH)));
+  assert(net->outputLayer->nodes[2]->value == (float)(sum * power(HIDDENWIDTH, HIDDENDEPTH)));
 
   free(inputs);
   freeNetwork(net);
   printf("Output layer predictions passed tests\n\n");
+}
+
+void testPredict(){
+  network *net = generateNetwork();
+  float *inputs = malloc(sizeof(float) * 3);
+  float sum = 0;
+  for(int i = 0; i <= INPUTWIDTH - 1; i ++){
+    inputs[i] = i;
+    sum += i;
+  }
+  printf("  Starting predict function\n");
+  predict(net, inputs);
+  printf("  Predict function exited without error\n");
+  printf("  Starting print node value function\n");
+  printNodeValues(net);
+  printf("  Node values printed successfully\n");
+
+  printf("  Starting freeing inputs array in heap\n");
+  free(inputs);
+  printf("  Inputs freed sucessfully\n");
+  printf("  Starting freeing network function\n");
+  freeNetwork(net);
+  printf("  Network freed successfully\n");
+  printf("  Predict function passed tests\n");
 }
 
 //test the error calculation function
@@ -588,7 +632,7 @@ void testCalculateErrorSquared(){
   predict(net, &inputs);
   float *labels = malloc(sizeof(float) * OUTPUTWIDTH);
   for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
-    labels[i] = 1 * INPUTWIDTH * pow(HIDDENWIDTH, HIDDENDEPTH);
+    labels[i] = 1 * INPUTWIDTH * power(HIDDENWIDTH, HIDDENDEPTH);
   }
   float error = calculateErrorSquared(net, &labels);
   printNodeValues(net);
@@ -643,6 +687,11 @@ void testFindErrorSquaredOfExample(){
   freeNetwork(net);
 }
 
+void testPower(){
+  assert(power(3, 2) == 9);
+  assert(power(5, 0) == 1);
+}
+
 //main test runner
 void test(){
  // testGenerateNetwork();
@@ -650,9 +699,11 @@ void test(){
   //testPredictInputLayer();
   //testPredictHiddenLayers();
   //testPredictOutputLayer();
-  //testCalculateErrorSquared();
+  //testPredict();
+  testCalculateErrorSquared();
   //testCreateTable();
-  testFindErrorSquaredOfExample();
+  //testFindErrorSquaredOfExample();
+  //testPower();
 
   printf("All tests passed\nExiting...\n");
 }
