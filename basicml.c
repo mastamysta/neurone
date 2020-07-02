@@ -427,6 +427,7 @@ void assignInputNodeWeight(network *net, int node, float value){
   net->inputLayer->nodes[node]->weight = value;
 }
 
+//find error squared of a single sample of features and labels
 float findErrorSquaredOfExample(network *net, table *features, table *labels){
   //put features into an array (JANKY)
   printf("  Creating features array from features table\n");
@@ -448,14 +449,61 @@ float findErrorSquaredOfExample(network *net, table *features, table *labels){
   return errorSquared;
 }
 
+//return a pointer to a copy of the network at the pointer given
 network *copyNetwork(network *net){
   network *networkCopy = generateNetwork();
+  //copy all input layer edges and nodes
+  for(int i = 0; i <= INPUTWIDTH - 1; i ++){
+    assignInputNodeWeight(networkCopy, i, net->inputLayer->nodes[i]->weight);
+    for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
+      assignInputEdgeWeight(networkCopy, i, j, net->inputLayer->nodes[i]->outputs[j].weight);
+    }
+  }
+  //for each hidden layer EXCEPT THE LAST LAYER
+  for(int i = 0; i <= HIDDENDEPTH - 2; i ++){
+    //copy all node and edge weights in hidden layer
+    for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
+      assignHiddenNodeWeight(networkCopy, i, j, net->hiddenLayers->hiddenLayers[i]->nodes[j]->weight);
+      for(int k = 0; k <= HIDDENWIDTH - 1; k ++){
+        assignHiddenEdgeWeight(networkCopy, i, j, k, net->hiddenLayers->hiddenLayers[i]->nodes[j]->outputs[k].weight);
+      }
+    }
+  }
+  //copy all node and edge weights in final hidden layer
+  for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
+    assignHiddenNodeWeight(networkCopy, HIDDENDEPTH - 1, j, net->hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]->nodes[j]->weight);
+    for(int k = 0; k <= OUTPUTWIDTH - 1; k ++){
+      assignHiddenEdgeWeight(networkCopy, HIDDENDEPTH - 1, j, k, net->hiddenLayers->hiddenLayers[HIDDENDEPTH - 1]->nodes[j]->outputs[k].weight);
+    }
+  }
+  //copy all node weights in output layer
+  for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
+    assignOutputNodeWeight(networkCopy, i, net->outputLayer->nodes[i]->weight);
+  }
+  return networkCopy;
 }
 
-void finiteInstanceStochasticTraining(network *net, table *features, table *labels, int epochs, int instances){
-  for(int i = 0; i <= features->width - 1; i ++){
+//return best of the random instances on given training example
+network *singleExampleFiniteRandomInstanceStochastic(network *net, table *features, table *labels, int instances){
 
+}
+
+//a single epoch of finite random instance stochastic training
+void finiteRandomInstanceStochasticEpoch(network *net, table *features, table *labels, int instances){
+  for(int i = 0; i <= features->width; i ++){
+    singleExampleFiniteRandomInstanceStochastic(net, features);
   }
+}
+
+//train the network by branching randomly and selecting the best branch for each item
+void finiteRandomInstanceStochasticTraining(network *net, table *features, table *labels, int instances, int epochs){
+  printf("  Beginning random finite instance stochastic training with %i epochs\n", epochs);
+  for(int i = 0; i <= epochs - 1; i ++){
+    printf("    Beginning epoch %i\n", i);
+    finiteRandomInstanceStochasticEpoch(net,features,labels,instances);
+    printf("    Epoch %i sucessfully completed\n", i);
+  }
+  printf("  Finite random instance stochastic training completed without error\n");
 }
 
 //cleanup functions --------------------------------------
@@ -708,7 +756,7 @@ void test(){
   //testCalculateErrorSquared();
   //testCreateTable();
   //testFindErrorSquaredOfExample();
-  //testPower();
+  testPower();
 
   printf("All tests passed\nExiting...\n");
 }
