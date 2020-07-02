@@ -260,79 +260,6 @@ void predict(network *net, float* inputs){
   printf("    Predict output layer function exited without error\n");
 }
 
-//training functions -----------------------------------------------------
-
-//a random float value from 0-1 TODO:ADD DISTRIBUTION TYPES AND MONITOR EFFECTS
-float generateNoise(){
-  const float MAX = 1;
-  //generates a float value from 0 to 1 randomly
-  float x = (float)rand()/(float)(RAND_MAX/MAX);
-  return x;
-}
-
-//calculate error squared for a dataset
-float calculateErrorSquared(network *net, float *label){
-  float error = 0;
-  for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
-    error += power(net->outputLayer->nodes[i]->value - *(label + i), 2);
-  }
-  return error;
-}
-
-//assign a output layer node weight
-void assignOutputNodeWeight(network *net, int node, float value){
-  net->outputLayer->nodes[node]->weight = value;
-}
-
-//assign a hidden layer edge weight
-void assignHiddenEdgeWeight(network *net, int layer, int node, int edge, float value){
-  net->hiddenLayers->hiddenLayers[layer]->nodes[node]->outputs[edge].weight = value;
-}
-
-//assign a hidden layer node weight
-void assignHiddenNodeWeight(network *net, int layer, int node, float value){
-  net->hiddenLayers->hiddenLayers[layer]->nodes[node]->weight = value;
-}
-
-//assign an input layer edge weight
-void assignInputEdgeWeight(network *net, int node, int edge, float value){
-  net->inputLayer->nodes[node]->outputs[edge].weight = value;
-}
-
-//assign an input node weight
-void assignInputNodeWeight(network *net, int node, float value){
-  net->inputLayer->nodes[node]->weight = value;
-}
-
-void backPropagate(){
-
-}
-
-float findErrorSquaredOfExample(network *net, table *features, table *labels){
-  //put features into an array (JANKY)
-  printf("  Creating features array from features table\n");
-  float featuresArray[features->depth];
-  for(int i = 0; i <= features->depth - 1; i ++){
-    featuresArray[i] = features->columns[0]->values[i];
-  }
-  printf("  Feature array created, creating labls array\n");
-  //similarly put labels into an array
-  float labelsArray[labels->depth];
-  for(int i = 0; i <= labels->depth - 1; i ++){
-    labelsArray[i] = labels->columns[0]->values[i];
-  }
-  printf("  Label array created, beginning predict function\n");
-  predict(net, featuresArray);
-  printf("  Predict function completed, finding error squared of network\n");
-  float errorSquared = calculateErrorSquared(net, labelsArray);
-  printf("  Error squared found, single example computed without error\n");
-  return errorSquared;
-}
-
-// void train(network *net, table *data, table *labels,int epochs){
-
-// }
-
 //initialization functions --------------------------------------------------
 
 //set parameters in input layer to be identity
@@ -454,6 +381,81 @@ network *generateNetwork(){
 
   printf("Network initialisation finished\n");
   return net;
+}
+
+//training functions -----------------------------------------------------
+
+//a random float value from 0-1 TODO:ADD DISTRIBUTION TYPES AND MONITOR EFFECTS
+float generateNoise(){
+  const float MAX = 1;
+  //generates a float value from 0 to 1 randomly
+  float x = (float)rand()/(float)(RAND_MAX/MAX);
+  return x;
+}
+
+//calculate error squared for a dataset
+float calculateErrorSquared(network *net, float *label){
+  float error = 0;
+  for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
+    error += power(net->outputLayer->nodes[i]->value - *(label + i), 2);
+  }
+  return error;
+}
+
+//assign a output layer node weight
+void assignOutputNodeWeight(network *net, int node, float value){
+  net->outputLayer->nodes[node]->weight = value;
+}
+
+//assign a hidden layer edge weight
+void assignHiddenEdgeWeight(network *net, int layer, int node, int edge, float value){
+  net->hiddenLayers->hiddenLayers[layer]->nodes[node]->outputs[edge].weight = value;
+}
+
+//assign a hidden layer node weight
+void assignHiddenNodeWeight(network *net, int layer, int node, float value){
+  net->hiddenLayers->hiddenLayers[layer]->nodes[node]->weight = value;
+}
+
+//assign an input layer edge weight
+void assignInputEdgeWeight(network *net, int node, int edge, float value){
+  net->inputLayer->nodes[node]->outputs[edge].weight = value;
+}
+
+//assign an input node weight
+void assignInputNodeWeight(network *net, int node, float value){
+  net->inputLayer->nodes[node]->weight = value;
+}
+
+float findErrorSquaredOfExample(network *net, table *features, table *labels){
+  //put features into an array (JANKY)
+  printf("  Creating features array from features table\n");
+  float featuresArray[features->depth];
+  for(int i = 0; i <= features->depth - 1; i ++){
+    featuresArray[i] = features->columns[0]->values[i];
+  }
+  printf("  Feature array created, creating labls array\n");
+  //similarly put labels into an array
+  float labelsArray[labels->depth];
+  for(int i = 0; i <= labels->depth - 1; i ++){
+    labelsArray[i] = labels->columns[0]->values[i];
+  }
+  printf("  Label array created, beginning predict function\n");
+  predict(net, featuresArray);
+  printf("  Predict function completed, finding error squared of network\n");
+  float errorSquared = calculateErrorSquared(net, labelsArray);
+  printf("  Error squared found, single example computed without error\n");
+  return errorSquared;
+}
+
+network *copyNetwork(network *net){
+  network *networkCopy = generateNetwork();
+}
+
+void finiteInstanceStochasticTraining(network *net, table *features, table *labels, int epochs, int instances){
+  for(int i = 0; i <= features->width - 1; i ++){
+
+  }
 }
 
 //cleanup functions --------------------------------------
@@ -636,7 +638,7 @@ void testCalculateErrorSquared(){
   for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
     labels[i] = 1 * INPUTWIDTH * power(HIDDENWIDTH, HIDDENDEPTH);
   }
-  float error = calculateErrorSquared(net, &labels);
+  float error = calculateErrorSquared(net, labels);
   printNodeValues(net);
   assert(error == 0);
 
@@ -672,7 +674,7 @@ void testFindErrorSquaredOfExample(){
   //first entry must be column length
   testLabels[0] = OUTPUTWIDTH;
   for(int i = 0; i <= OUTPUTWIDTH - 1; i++){
-    testLabels[i + 1] = i;
+    testLabels[i + 1] = 648;
   }
 
   table *featureTable = createTable(1, testFeatures);
@@ -682,6 +684,8 @@ void testFindErrorSquaredOfExample(){
   printf("\n\n  Single example error: %f\n", error);
   printNodeValues(net);
 
+  assert(error == 0);
+
   destroyTable(featureTable);
   destroyTable(labelTable);
   freeNetwork(net);
@@ -690,6 +694,7 @@ void testFindErrorSquaredOfExample(){
 void testPower(){
   assert(power(3, 2) == 9);
   assert(power(5, 0) == 1);
+  printf("Power function passed all tests\n");
 }
 
 //main test runner
@@ -702,7 +707,7 @@ void test(){
   //testPredict();
   //testCalculateErrorSquared();
   //testCreateTable();
-  testFindErrorSquaredOfExample();
+  //testFindErrorSquaredOfExample();
   //testPower();
 
   printf("All tests passed\nExiting...\n");
