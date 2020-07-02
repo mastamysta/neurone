@@ -135,10 +135,11 @@ table *compileColumns(int num, column *columns[]){
 column *createColumn(int length, float *values){
   column *column = malloc(sizeof(column) + sizeof(float) * length);
   column->length = length;
+  printf("        Value 0 (Length identifier): %f\n", *values);
   //ignoring first index as this is a lenth marker for each column
   for(int i = 1; i <= length; i ++){
     column->values[i - 1] = *(values + i);
-    printf("%f\n", column->values[i - 1]);
+    printf("      Value %i: %f\n",i ,column->values[i - 1]);
   }
   return column;
 }
@@ -153,7 +154,7 @@ table *createTable(int num, ...){
     float *col = va_arg(valist, float *);
     //length is stored in first index in array
     int length = *col;
-    printf("Column Length: %i\n", length);
+    printf("    Creating column %i of Length: %i\n",i ,length);
     columns[i] = createColumn(length, col);
   }
   va_end(valist);
@@ -647,15 +648,12 @@ void testCalculateErrorSquared(){
 void testCreateTable(){
   float testData[] = {3, 0, 1, 2};
   float col2[] = {3, 2, 3, 4};
-  for(int i = 1; i <= testData[0]; i ++){
-    printf("Data Entry: %i  -  %f\n", i, testData[i]);
-  }
   table *table = createTable(2, testData, col2);
   for(int i = 0; i <= 2; i ++){
-    printf("Table Index %i: %f\n", i, table->columns[0]->values[i]);
+    printf("  Table Index 0, %i: %f\n", i, table->columns[0]->values[i]);
   }
   for(int i = 0; i <= 2; i ++){
-    printf("Table Index %i: %f\n", i, table->columns[1]->values[i]);
+    printf("  Table Index 1, %i: %f\n", i, table->columns[1]->values[i]);
   }
   destroyTable(table);
   printf("Table creation passed tests\n");
