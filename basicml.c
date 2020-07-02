@@ -162,6 +162,17 @@ table *createTable(int num, ...){
   return table;
 }
 
+//split off a column from a table into a separate table
+table *splitColumn(table *table, int column){
+  //assigned as length + 1 to allow for length identifier at 0th index
+  float *values = malloc(sizeof(float) * table->depth + 1);
+  *values = table->depth;
+  for(int i = 1; i <= table->depth; i ++){
+    *(values + i) = table->columns[column]->values[i - 1];
+  }
+  return createTable(1, values);
+}
+
 //destroys a table structure
 void destroyTable(table *table){
   for(int i = 0; i <= table->width - 1; i ++){
@@ -490,14 +501,18 @@ network *singleExampleFiniteRandomInstanceStochastic(network *net, table *featur
 
 //a single epoch of finite random instance stochastic training
 void finiteRandomInstanceStochasticEpoch(network *net, table *features, table *labels, int instances){
+  table *exampleFeatures;
+  //for each example in the training set
   for(int i = 0; i <= features->width; i ++){
-    singleExampleFiniteRandomInstanceStochastic(net, features);
+    exampleFeatures = splitColumn(features, i);
+  //  singleExampleFiniteRandomInstanceStochastic(net, features);
   }
 }
 
 //train the network by branching randomly and selecting the best branch for each item
 void finiteRandomInstanceStochasticTraining(network *net, table *features, table *labels, int instances, int epochs){
   printf("  Beginning random finite instance stochastic training with %i epochs\n", epochs);
+  //for each epoch within the bound
   for(int i = 0; i <= epochs - 1; i ++){
     printf("    Beginning epoch %i\n", i);
     finiteRandomInstanceStochasticEpoch(net,features,labels,instances);
