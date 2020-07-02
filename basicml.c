@@ -395,6 +395,46 @@ network *generateNetwork(){
   return net;
 }
 
+//cleanup functions --------------------------------------
+
+//free space on heap for input layer
+void freeInputLayer(inputLayer *inputLayer){
+  for(int i = 0; i <= INPUTWIDTH - 1; i ++){
+    free(inputLayer->nodes[i]);
+  }
+  free(inputLayer);
+}
+
+//free space on heap for hidden layers
+void freeHiddenLayers(hiddenLayers *hiddenLayers){
+  //free all other layers of hidden layers in reverse order
+  for(int i = 0; i <= HIDDENDEPTH - 1; i ++){
+    for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
+      free(hiddenLayers->hiddenLayers[i]->nodes[j]);
+    }
+    free(hiddenLayers->hiddenLayers[i]);
+  }
+  free(hiddenLayers);
+}
+
+//free space on heap for output layer
+void freeOutputLayer(outputLayer *outputLayer){
+  for(int i = 0; i <= OUTPUTWIDTH; i ++){
+    free(outputLayer->nodes[i]);
+  }
+  free(outputLayer);
+}
+
+//free space on heap for network
+void freeNetwork(network *net){
+  freeInputLayer(net->inputLayer);
+  freeHiddenLayers(net->hiddenLayers);
+  freeOutputLayer(net->outputLayer);
+  free(net);
+  printf("Network destroyed\n");
+}
+
+
 //training functions -----------------------------------------------------
 
 //a random float value from 0-1 TODO:ADD DISTRIBUTION TYPES AND MONITOR EFFECTS
@@ -459,6 +499,11 @@ float findErrorSquaredOfExample(network *net, table *features, table *labels){
   float errorSquared = calculateErrorSquared(net, labelsArray);
   printf("  Error squared found, single example computed without error\n");
   return errorSquared;
+}
+
+//copy a network to a network pointer provided
+void copyNetworkTo(network *copy, network *location){
+  *location = *copy;
 }
 
 //return a pointer to a copy of the network at the pointer given MUST BE FREED
@@ -538,12 +583,36 @@ void addNoiseToNetwork(network *net){
   addNoiseToOutputLayer(net);
 }
 
-//return best of the random instances on given training example
-network *singleExampleFiniteRandomInstanceStochastic(network *net, table *features, table *labels, int instances){
+//return best of the random instances on given training example,takes single column tables as params
+void singleExampleFiniteRandomInstanceStochastic(network *net, table *features, table *labels, int instances){
   //for each random instance required
+  network **netInstances = malloc(sizeof(network *) * instances);
+  float *errorSquared = malloc(sizeof(float) * instances);
+  float min;
+  int best = 0;
+  //calculae error squared for all networks
   for(int i = 0; i <= instances - 1; i ++){
-
+    *(netInstances + i) = copyNetwork(net);
+    addNoiseToNetwork(*(netInstances + i));
+    *(errorSquared + i) = findErrorSquaredOfExample(net, features, labels);
   }
+  //find index of lowest error and save to best
+  min = *(errorSquared);
+  for(int i = 1; i <= instances - 1; i ++){
+    if(*(errorSquared + i) <= min){
+      min = *(errorSquared + i);
+      best = i;
+    }
+  }
+  copyNetworkTo(*(netInstances + best), net);
+  //free memory for each network pointed to
+  for(int i = 0; i <= instances - 1; i ++){
+    freeNetwork(*(netInstances + i));
+  }
+  //free memory for each pointer
+  free(netInstances);
+  //free memory for error array
+  free(errorSquared);
 }
 
 //a single epoch of finite random instance stochastic training
@@ -556,6 +625,7 @@ void finiteRandomInstanceStochasticEpoch(network *net, table *features, table *l
     exampleLabels = splitColumn(labels, i);
     singleExampleFiniteRandomInstanceStochastic(net, features, labels, instances);
   }
+  //may require tables to be freed????
 }
 
 //train the network by branching randomly and selecting the best branch for each item
@@ -570,44 +640,6 @@ void finiteRandomInstanceStochasticTraining(network *net, table *features, table
   printf("  Finite random instance stochastic training completed without error\n");
 }
 
-//cleanup functions --------------------------------------
-
-//free space on heap for input layer
-void freeInputLayer(inputLayer *inputLayer){
-  for(int i = 0; i <= INPUTWIDTH - 1; i ++){
-    free(inputLayer->nodes[i]);
-  }
-  free(inputLayer);
-}
-
-//free space on heap for hidden layers
-void freeHiddenLayers(hiddenLayers *hiddenLayers){
-  //free all other layers of hidden layers in reverse order
-  for(int i = 0; i <= HIDDENDEPTH - 1; i ++){
-    for(int j = 0; j <= HIDDENWIDTH - 1; j ++){
-      free(hiddenLayers->hiddenLayers[i]->nodes[j]);
-    }
-    free(hiddenLayers->hiddenLayers[i]);
-  }
-  free(hiddenLayers);
-}
-
-//free space on heap for output layer
-void freeOutputLayer(outputLayer *outputLayer){
-  for(int i = 0; i <= OUTPUTWIDTH; i ++){
-    free(outputLayer->nodes[i]);
-  }
-  free(outputLayer);
-}
-
-//free space on heap for network
-void freeNetwork(network *net){
-  freeInputLayer(net->inputLayer);
-  freeHiddenLayers(net->hiddenLayers);
-  freeOutputLayer(net->outputLayer);
-  free(net);
-  printf("Network destroyed\n");
-}
 
 //testing --------------------------------------------------------------
 
@@ -812,13 +844,13 @@ void testPower(){
 //main test runner
 void test(){
  // testGenerateNetwork();
-  testGenerateNoise(100);
+  //testGenerateNoise(100);
   //testPredictInputLayer();
   //testPredictHiddenLayers();
   //testPredictOutputLayer();
   //testPredict();
   //testCalculateErrorSquared();
-  //testCreateTable();
+  testCreateTable();
   //testFindErrorSquaredOfExample();
   //testPower();
 
