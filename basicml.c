@@ -271,10 +271,10 @@ float generateNoise(){
 }
 
 //calculate error squared for a dataset
-float calculateErrorSquared(network *net, float *label[]){
+float calculateErrorSquared(network *net, float *label){
   float error = 0;
   for(int i = 0; i <= OUTPUTWIDTH - 1; i ++){
-    error += power(net->outputLayer->nodes[i]->value - (*label)[i], 2);
+    error += power(net->outputLayer->nodes[i]->value - *(label + i), 2);
   }
   return error;
 }
@@ -310,21 +310,22 @@ void backPropagate(){
 
 float findErrorSquaredOfExample(network *net, table *features, table *labels){
   //put features into an array (JANKY)
-  printf("hereA\n");
+  printf("  Creating features array from features table\n");
   float featuresArray[features->depth];
   for(int i = 0; i <= features->depth - 1; i ++){
     featuresArray[i] = features->columns[0]->values[i];
   }
-  printf("hereB\n");
+  printf("  Feature array created, creating labls array\n");
   //similarly put labels into an array
   float labelsArray[labels->depth];
   for(int i = 0; i <= labels->depth - 1; i ++){
     labelsArray[i] = labels->columns[0]->values[i];
   }
-  printf("hereC\n");
+  printf("  Label array created, beginning predict function\n");
   predict(net, featuresArray);
-  printf("hereD\n");
+  printf("  Predict function completed, finding error squared of network\n");
   float errorSquared = calculateErrorSquared(net, labelsArray);
+  printf("  Error squared found, single example computed without error\n");
   return errorSquared;
 }
 
@@ -678,7 +679,8 @@ void testFindErrorSquaredOfExample(){
   table *labelTable = createTable(1, testLabels);
 
   float error = findErrorSquaredOfExample(net, featureTable, labelTable);
-  printf("%f\n", error);
+  printf("\n\n  Single example error: %f\n", error);
+  printNodeValues(net);
 
   destroyTable(featureTable);
   destroyTable(labelTable);
@@ -699,8 +701,8 @@ void test(){
   //testPredictOutputLayer();
   //testPredict();
   //testCalculateErrorSquared();
-  testCreateTable();
-  //testFindErrorSquaredOfExample();
+  //testCreateTable();
+  testFindErrorSquaredOfExample();
   //testPower();
 
   printf("All tests passed\nExiting...\n");
