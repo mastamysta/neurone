@@ -877,14 +877,11 @@ void testFiniteRandomInstanceStochasticTraining(){
     testLabels3[i + 1] = 648;
   }
 
-  table *featureTable = createTable(1, testFeatures);
-  table *labelTable = createTable(1, testLabels);
+  table *featureTable = createTable(3, testFeatures1, testFeatures2, testFeatures3);
+  table *labelTable = createTable(3, testLabels1, testLabels2, testLabels3);
 
-  float error = findErrorSquaredOfExample(net, featureTable, labelTable);
-  printf("\n\n  Single example error: %f\n", error);
+  finiteRandomInstanceStochasticTraining(net, featureTable, labelTable, 4, 10);
   printNodeValues(net);
-
-  assert(error == 0);
 
   destroyTable(featureTable);
   destroyTable(labelTable);
@@ -903,6 +900,7 @@ void test(){
   //testCreateTable();
   //testFindErrorSquaredOfExample();
   //testPower();
+  testFiniteRandomInstanceStochasticTraining();
 
   printf("All tests passed\nExiting...\n");
 }
