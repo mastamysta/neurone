@@ -852,13 +852,29 @@ void testFiniteRandomInstanceStochasticTraining(){
   testFeatures2[0] = INPUTWIDTH;
   testFeatures3[0] = INPUTWIDTH;
   for(int i = 0; i <= INPUTWIDTH - 1; i++){
-    testFeatures[i + 1] = i;
+    testFeatures1[i + 1] = i;
   }
-  float testLabels[OUTPUTWIDTH + 1];
+  for(int i = 0; i <= INPUTWIDTH - 1; i++){
+    testFeatures2[i + 1] = i;
+  }
+  for(int i = 0; i <= INPUTWIDTH - 1; i++){
+    testFeatures3[i + 1] = i;
+  }
+  float testLabels1[OUTPUTWIDTH + 1];
+  float testLabels2[OUTPUTWIDTH + 1];
+  float testLabels3[OUTPUTWIDTH + 1];
   //first entry must be column length
-  testLabels[0] = OUTPUTWIDTH;
+  testLabels1[0] = OUTPUTWIDTH;
+  testLabels2[0] = OUTPUTWIDTH;
+  testLabels3[0] = OUTPUTWIDTH;
   for(int i = 0; i <= OUTPUTWIDTH - 1; i++){
-    testLabels[i + 1] = 648;
+    testLabels1[i + 1] = 648;
+  }
+  for(int i = 0; i <= OUTPUTWIDTH - 1; i++){
+    testLabels2[i + 1] = 648;
+  }
+  for(int i = 0; i <= OUTPUTWIDTH - 1; i++){
+    testLabels3[i + 1] = 648;
   }
 
   table *featureTable = createTable(1, testFeatures);
